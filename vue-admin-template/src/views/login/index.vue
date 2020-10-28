@@ -173,7 +173,7 @@ $cursor: #fff;
 </style>
 
 <style lang="scss" scoped>
-$bg:#2d3a4b;
+$bg:#5d3a4b;
 $dark_gray:#889aa4;
 $light_gray:#eee;
 
@@ -182,12 +182,17 @@ $light_gray:#eee;
   width: 100%;
   background-color: $bg;
   overflow: hidden;
+  display: flex;
+  /*垂直排列*/
+  flex-direction: column;
+  align-items:center;/*由于flex-direction: column，因此align-items代表的是水平方向*/
+  justify-content: center;/*由于flex-direction: column，因此justify-content代表的是垂直方向*/
 
   .login-form {
     position: relative;
     width: 520px;
     max-width: 100%;
-    padding: 160px 35px 0;
+    padding: 0px 35px 0;
     margin: 0 auto;
     overflow: hidden;
   }
