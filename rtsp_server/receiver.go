@@ -2,14 +2,11 @@ package rtsp_server
 
 import (
 	"fmt"
-	
 
 	"github.com/deepch/vdk/format/rtsp"
 )
 
 type Receiver struct {
-	core.PublishContext
-
 	mid    string
 	url    string
 	client *rtsp.Client
