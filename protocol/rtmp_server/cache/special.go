@@ -2,11 +2,11 @@ package cache
 
 import (
 	"bytes"
+	"go-assist/protocol/intfs"
 
-	"github.com/gwuhaolin/livego/av"
+	"github.com/astaxie/beego/logs"
+
 	"github.com/gwuhaolin/livego/protocol/amf"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -17,29 +17,30 @@ const (
 var setFrameFrame []byte
 
 func init() {
+
 	b := bytes.NewBuffer(nil)
 	encoder := &amf.Encoder{}
 	if _, err := encoder.Encode(b, SetDataFrame, amf.AMF0); err != nil {
-		logs.Fatal(err)
+		logs.Critical(err)
 	}
 	setFrameFrame = b.Bytes()
 }
 
 type SpecialCache struct {
 	full bool
-	p    *av.Packet
+	p    *intfs.Packet
 }
 
 func NewSpecialCache() *SpecialCache {
 	return &SpecialCache{}
 }
 
-func (specialCache *SpecialCache) Write(p *av.Packet) {
+func (specialCache *SpecialCache) Write(p *intfs.Packet) {
 	specialCache.p = p
 	specialCache.full = true
 }
 
-func (specialCache *SpecialCache) Send(w av.WriteCloser) error {
+func (specialCache *SpecialCache) Send(w intfs.WriteCloser) error {
 	if !specialCache.full {
 		return nil
 	}

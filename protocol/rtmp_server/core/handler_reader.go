@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"go-assist/container/flv"
+	"go-assist/protocol/container/flv"
 	"go-assist/protocol/intfs"
 	"net/url"
 	"reflect"

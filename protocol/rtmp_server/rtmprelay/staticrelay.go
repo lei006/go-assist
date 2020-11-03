@@ -13,7 +13,7 @@ import (
 
 type StaticPush struct {
 	RtmpUrl       string
-	packet_chan   chan *av.Packet
+	packet_chan   chan *intfs.Packet
 	sndctrl_chan  chan string
 	connectClient *core.ConnClient
 	startflag     bool
@@ -84,7 +84,7 @@ func ReleaseStaticPushObject(rtmpurl string) {
 func NewStaticPush(rtmpurl string) *StaticPush {
 	return &StaticPush{
 		RtmpUrl:       rtmpurl,
-		packet_chan:   make(chan *av.Packet, 500),
+		packet_chan:   make(chan *intfs.Packet, 500),
 		sndctrl_chan:  make(chan string),
 		connectClient: nil,
 		startflag:     false,
@@ -121,7 +121,7 @@ func (self *StaticPush) Stop() {
 	self.startflag = false
 }
 
-func (self *StaticPush) WriteAvPacket(packet *av.Packet) {
+func (self *StaticPush) WriteAvPacket(packet *intfs.Packet) {
 	if !self.startflag {
 		return
 	}
@@ -129,7 +129,7 @@ func (self *StaticPush) WriteAvPacket(packet *av.Packet) {
 	self.packet_chan <- packet
 }
 
-func (self *StaticPush) sendPacket(p *av.Packet) {
+func (self *StaticPush) sendPacket(p *intfs.Packet) {
 	if !self.startflag {
 		return
 	}
@@ -144,12 +144,12 @@ func (self *StaticPush) sendPacket(p *av.Packet) {
 	//logs.Printf("Static sendPacket: rtmpurl=%s, length=%d, streamid=%d",
 	//	self.RtmpUrl, len(p.Data), cs.StreamID)
 	if p.IsVideo {
-		cs.TypeID = av.TAG_VIDEO
+		cs.TypeID = intfs.TAG_VIDEO
 	} else {
 		if p.IsMetadata {
-			cs.TypeID = av.TAG_SCRIPTDATAAMF0
+			cs.TypeID = intfs.TAG_SCRIPTDATAAMF0
 		} else {
-			cs.TypeID = av.TAG_AUDIO
+			cs.TypeID = intfs.TAG_AUDIO
 		}
 	}
 

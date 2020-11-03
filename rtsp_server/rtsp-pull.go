@@ -29,7 +29,7 @@ func MakeNewRtspPull(id string, rtsp_url string, title string) (*RtspPuller, err
 	}
 
 	//处理数据包函数...
-	handleWritePacket := func(codecs []av.CodecData, pck av.Packet) {
+	handleWritePacket := func(codecs []intfs.CodecData, pck intfs.Packet) {
 
 		sps := codecs[0].(h264parser.CodecData).SPS()
 		pps := codecs[0].(h264parser.CodecData).PPS()

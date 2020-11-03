@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gwuhaolin/livego/av"
 	"github.com/gwuhaolin/livego/configure"
 	"github.com/gwuhaolin/livego/protocol/amf"
 	"github.com/gwuhaolin/livego/utils/pio"
 	"github.com/gwuhaolin/livego/utils/uid"
+
+	"go-assist/protocol/intfs"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -21,7 +22,7 @@ var (
 )
 
 /*
-func NewFlv(handler av.Handler, info av.Info) {
+func NewFlv(handler intfs.Handler, info intfs.Info) {
 	patths := strings.SplitN(info.Key, "/", 2)
 
 	if len(patths) != 2 {
@@ -51,7 +52,7 @@ const (
 
 type FLVWriter struct {
 	Uid string
-	av.RWBaser
+	intfs.RWBaser
 	app, title, url string
 	buf             []byte
 	closed          chan struct{}
@@ -65,7 +66,7 @@ func NewFLVWriter(app, title, url string, ctx *os.File) *FLVWriter {
 		title:   title,
 		url:     url,
 		ctx:     ctx,
-		RWBaser: av.NewRWBaser(time.Second * 10),
+		RWBaser: intfs.NewRWBaser(time.Second * 10),
 		closed:  make(chan struct{}),
 		buf:     make([]byte, headerLen),
 	}
@@ -77,20 +78,20 @@ func NewFLVWriter(app, title, url string, ctx *os.File) *FLVWriter {
 	return ret
 }
 
-func (writer *FLVWriter) Write(p *av.Packet) error {
+func (writer *FLVWriter) Write(p *intfs.Packet) error {
 	writer.RWBaser.SetPreTime()
 	h := writer.buf[:headerLen]
-	typeID := av.TAG_VIDEO
+	typeID := intfs.TAG_VIDEO
 	if !p.IsVideo {
 		if p.IsMetadata {
 			var err error
-			typeID = av.TAG_SCRIPTDATAAMF0
+			typeID = intfs.TAG_SCRIPTDATAAMF0
 			p.Data, err = amf.MetaDataReform(p.Data, amf.DEL)
 			if err != nil {
 				return err
 			}
 		} else {
-			typeID = av.TAG_AUDIO
+			typeID = intfs.TAG_AUDIO
 		}
 	}
 	dataLen := len(p.Data)
@@ -135,7 +136,7 @@ func (writer *FLVWriter) Close(error) {
 	close(writer.closed)
 }
 
-func (writer *FLVWriter) Info() (ret av.Info) {
+func (writer *FLVWriter) Info() (ret intfs.Info) {
 	ret.UID = writer.Uid
 	ret.URL = writer.url
 	ret.Key = writer.app + "/" + writer.title
@@ -144,7 +145,7 @@ func (writer *FLVWriter) Info() (ret av.Info) {
 
 type FlvDvr struct{}
 
-func (f *FlvDvr) GetWriter(info av.Info) av.WriteCloser {
+func (f *FlvDvr) GetWriter(info intfs.Info) intfs.WritePacketer {
 	paths := strings.SplitN(info.Key, "/", 2)
 	if len(paths) != 2 {
 		logs.Warning("invalid info")

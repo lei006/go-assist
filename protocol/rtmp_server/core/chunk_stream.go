@@ -3,8 +3,8 @@ package core
 import (
 	"encoding/binary"
 	"fmt"
+	"go-assist/protocol/intfs"
 
-	"github.com/gwuhaolin/livego/av"
 	"github.com/gwuhaolin/livego/utils/pool"
 )
 
@@ -81,11 +81,11 @@ END:
 }
 
 func (chunkStream *ChunkStream) writeChunk(w *ReadWriter, chunkSize int) error {
-	if chunkStream.TypeID == av.TAG_AUDIO {
+	if chunkStream.TypeID == intfs.TAG_AUDIO {
 		chunkStream.CSID = 4
-	} else if chunkStream.TypeID == av.TAG_VIDEO ||
-		chunkStream.TypeID == av.TAG_SCRIPTDATAAMF0 ||
-		chunkStream.TypeID == av.TAG_SCRIPTDATAAMF3 {
+	} else if chunkStream.TypeID == intfs.TAG_VIDEO ||
+		chunkStream.TypeID == intfs.TAG_SCRIPTDATAAMF0 ||
+		chunkStream.TypeID == intfs.TAG_SCRIPTDATAAMF3 {
 		chunkStream.CSID = 6
 	}
 

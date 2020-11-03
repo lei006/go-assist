@@ -3,13 +3,13 @@ package core
 import (
 	"bytes"
 	"fmt"
+	"go-assist/protocol/intfs"
 	"io"
 	"math/rand"
 	"net"
 	neturl "net/url"
 	"strings"
 
-	"github.com/gwuhaolin/livego/av"
 	"github.com/gwuhaolin/livego/protocol/amf"
 
 	"github.com/astaxie/beego/logs"
@@ -281,12 +281,12 @@ func (connClient *ConnClient) Start(url string, method string) error {
 		return err
 	}
 
-	logs.Debug("method control:", method, av.PUBLISH, av.PLAY)
-	if method == av.PUBLISH {
+	logs.Debug("method control:", method, intfs.PUBLISH, intfs.PLAY)
+	if method == intfs.PUBLISH {
 		if err := connClient.writePublishMsg(); err != nil {
 			return err
 		}
-	} else if method == av.PLAY {
+	} else if method == intfs.PLAY {
 		if err := connClient.writePlayMsg(); err != nil {
 			return err
 		}
@@ -296,8 +296,8 @@ func (connClient *ConnClient) Start(url string, method string) error {
 }
 
 func (connClient *ConnClient) Write(c ChunkStream) error {
-	if c.TypeID == av.TAG_SCRIPTDATAAMF0 ||
-		c.TypeID == av.TAG_SCRIPTDATAAMF3 {
+	if c.TypeID == intfs.TAG_SCRIPTDATAAMF0 ||
+		c.TypeID == intfs.TAG_SCRIPTDATAAMF3 {
 		var err error
 		if c.Data, err = amf.MetaDataReform(c.Data, amf.ADD); err != nil {
 			return err

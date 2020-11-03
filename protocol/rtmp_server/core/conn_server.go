@@ -3,10 +3,10 @@ package core
 import (
 	"bytes"
 	"fmt"
+	"go-assist/protocol/intfs"
 	"io"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/gwuhaolin/livego/av"
 	"github.com/gwuhaolin/livego/protocol/amf"
 )
 
@@ -326,8 +326,8 @@ func (connServer *ConnServer) IsPublisher() bool {
 }
 
 func (connServer *ConnServer) Write(c ChunkStream) error {
-	if c.TypeID == av.TAG_SCRIPTDATAAMF0 ||
-		c.TypeID == av.TAG_SCRIPTDATAAMF3 {
+	if c.TypeID == intfs.TAG_SCRIPTDATAAMF0 ||
+		c.TypeID == intfs.TAG_SCRIPTDATAAMF3 {
 		var err error
 		if c.Data, err = amf.MetaDataReform(c.Data, amf.DEL); err != nil {
 			return err

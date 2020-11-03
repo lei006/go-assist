@@ -15,12 +15,16 @@ type RtmpServer struct {
 }
 
 func MakeRtmpServer() intfs.Server {
+
+	fmt.Println("xxxxxxxx111xxx")
+
 	srv := &RtmpServer{}
 	srv.address = ":1556"
 	return srv
 }
 
 func (this *RtmpServer) Start() (bool, error) {
+	fmt.Println("xxxxxxxxxxx")
 
 	listener, err := net.Listen("tcp", this.address)
 	if err != nil {
@@ -36,23 +40,23 @@ func (this *RtmpServer) Start() (bool, error) {
 	}()
 
 	logs.Debug(listener, this.address)
+	/*
+		for {
+			var netconn net.Conn
+			netconn, err = listener.Accept()
+			if err != nil {
+				return false, err
+			}
+			fmt.Println(netconn)
 
-	for {
-		var netconn net.Conn
-		netconn, err = listener.Accept()
-		if err != nil {
-			return false, err
+			//andler := MakeRtmpHandler(netconn)
+			//go this.Handle()
+
+			conn := core.NewConn(netconn, 4*1024)
+			//logs.Debug("new client, connect remote: ", conn.RemoteAddr().String(),"local:", conn.LocalAddr().String())
+			go this.handleConn(conn)
 		}
-		fmt.Println(netconn)
-
-		//andler := MakeRtmpHandler(netconn)
-		//go this.Handle()
-
-		conn := core.NewConn(netconn, 4*1024)
-		//logs.Debug("new client, connect remote: ", conn.RemoteAddr().String(),"local:", conn.LocalAddr().String())
-		go this.handleConn(conn)
-	}
-
+	*/
 	return true, err
 }
 func (this *RtmpServer) Stop() {
