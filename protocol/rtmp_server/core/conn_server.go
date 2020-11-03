@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/gwuhaolin/livego/av"
 	"github.com/gwuhaolin/livego/protocol/amf"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -251,7 +250,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 	if err != nil && err != io.EOF {
 		return err
 	}
-	// log.Debugf("rtmp req: %#v", vs)
+	// logs.Debug("rtmp req: %#v", vs)
 	switch vs[0].(type) {
 	case string:
 		switch vs[0].(string) {
@@ -278,7 +277,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 			}
 			connServer.done = true
 			connServer.isPublisher = true
-			log.Debug("handle publish req done")
+			logs.Debug("handle publish req done")
 		case cmdPlay:
 			if err = connServer.publishOrPlay(vs[1:]); err != nil {
 				return err
@@ -288,7 +287,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 			}
 			connServer.done = true
 			connServer.isPublisher = false
-			log.Debug("handle play req done")
+			logs.Debug("handle play req done")
 		case cmdFcpublish:
 			connServer.fcPublish(vs)
 		case cmdReleaseStream:
@@ -296,7 +295,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 		case cmdFCUnpublish:
 		case cmdDeleteStream:
 		default:
-			log.Debug("no support command=", vs[0].(string))
+			logs.Debug("no support command=", vs[0].(string))
 		}
 	}
 

@@ -12,7 +12,7 @@ import (
 	"github.com/gwuhaolin/livego/av"
 	"github.com/gwuhaolin/livego/protocol/amf"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/astaxie/beego/logs"
 )
 
 var (
@@ -74,7 +74,7 @@ func (connClient *ConnClient) readRespMsg() error {
 			r := bytes.NewReader(rc.Data)
 			vs, _ := connClient.decoder.DecodeBatch(r, amf.AMF0)
 
-			log.Debugf("readRespMsg: vs=%v", vs)
+			logs.Debug("readRespMsg: vs=%v", vs)
 			for k, v := range vs {
 				switch v.(type) {
 				case string:
@@ -157,7 +157,7 @@ func (connClient *ConnClient) writeConnectMsg() error {
 	event["tcUrl"] = connClient.tcurl
 	connClient.curcmdName = cmdConnect
 
-	log.Debugf("writeConnectMsg: connClient.transID=%d, event=%v", connClient.transID, event)
+	logs.Debug("writeConnectMsg: connClient.transID=%d, event=%v", connClient.transID, event)
 	if err := connClient.writeMsg(cmdConnect, connClient.transID, event); err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func (connClient *ConnClient) writeCreateStreamMsg() error {
 	connClient.transID++
 	connClient.curcmdName = cmdCreateStream
 
-	log.Debugf("writeCreateStreamMsg: connClient.transID=%d", connClient.transID)
+	logs.Debug("writeCreateStreamMsg: connClient.transID=%d", connClient.transID)
 	if err := connClient.writeMsg(cmdCreateStream, connClient.transID, nil); err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (connClient *ConnClient) writeCreateStreamMsg() error {
 		}
 
 		if err == ErrFail {
-			log.Debugf("writeCreateStreamMsg readRespMsg err=%v", err)
+			logs.Debug("writeCreateStreamMsg readRespMsg err=%v", err)
 			return err
 		}
 	}
@@ -199,7 +199,7 @@ func (connClient *ConnClient) writePublishMsg() error {
 func (connClient *ConnClient) writePlayMsg() error {
 	connClient.transID++
 	connClient.curcmdName = cmdPlay
-	log.Debugf("writePlayMsg: connClient.transID=%d, cmdPlay=%v, connClient.title=%v",
+	logs.Debug("writePlayMsg: connClient.transID=%d, cmdPlay=%v, connClient.title=%v",
 		connClient.transID, cmdPlay, connClient.title)
 
 	if err := connClient.writeMsg(cmdPlay, 0, nil, connClient.title); err != nil {
@@ -235,9 +235,9 @@ func (connClient *ConnClient) Start(url string, method string) error {
 		port = ":" + port
 	}
 	ips, err := net.LookupIP(host)
-	log.Debugf("ips: %v, host: %v", ips, host)
+	logs.Debug("ips: %v, host: %v", ips, host)
 	if err != nil {
-		log.Warning(err)
+		logs.Warning(err)
 		return err
 	}
 	remoteIP = ips[rand.Intn(len(ips))].String()
@@ -247,41 +247,41 @@ func (connClient *ConnClient) Start(url string, method string) error {
 
 	local, err := net.ResolveTCPAddr("tcp", localIP)
 	if err != nil {
-		log.Warning(err)
+		logs.Warning(err)
 		return err
 	}
-	log.Debug("remoteIP: ", remoteIP)
+	logs.Debug("remoteIP: ", remoteIP)
 	remote, err := net.ResolveTCPAddr("tcp", remoteIP)
 	if err != nil {
-		log.Warning(err)
+		logs.Warning(err)
 		return err
 	}
 	conn, err := net.DialTCP("tcp", local, remote)
 	if err != nil {
-		log.Warning(err)
+		logs.Warning(err)
 		return err
 	}
 
-	log.Debug("connection:", "local:", conn.LocalAddr(), "remote:", conn.RemoteAddr())
+	logs.Debug("connection:", "local:", conn.LocalAddr(), "remote:", conn.RemoteAddr())
 
 	connClient.conn = NewConn(conn, 4*1024)
 
-	log.Debug("HandshakeClient....")
+	logs.Debug("HandshakeClient....")
 	if err := connClient.conn.HandshakeClient(); err != nil {
 		return err
 	}
 
-	log.Debug("writeConnectMsg....")
+	logs.Debug("writeConnectMsg....")
 	if err := connClient.writeConnectMsg(); err != nil {
 		return err
 	}
-	log.Debug("writeCreateStreamMsg....")
+	logs.Debug("writeCreateStreamMsg....")
 	if err := connClient.writeCreateStreamMsg(); err != nil {
-		log.Debug("writeCreateStreamMsg error", err)
+		logs.Debug("writeCreateStreamMsg error", err)
 		return err
 	}
 
-	log.Debug("method control:", method, av.PUBLISH, av.PLAY)
+	logs.Debug("method control:", method, av.PUBLISH, av.PLAY)
 	if method == av.PUBLISH {
 		if err := connClient.writePublishMsg(); err != nil {
 			return err

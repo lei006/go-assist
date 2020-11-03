@@ -75,13 +75,13 @@ func MakeNewRtspPull(id string, rtsp_url string, title string) (*RtspPuller, err
 
 			session.RtpKeepAliveTimeout = KeepSleepTime * time.Second
 			if err != nil {
-				log.Println(name, err)
+				logs.Println(name, err)
 				time.Sleep(KeepSleepTime * time.Second)
 				continue
 			}
 			codec, err := session.Streams()
 			if err != nil {
-				log.Println(name, err)
+				logs.Println(name, err)
 				time.Sleep(KeepSleepTime * time.Second)
 				continue
 			}
@@ -89,7 +89,7 @@ func MakeNewRtspPull(id string, rtsp_url string, title string) (*RtspPuller, err
 			for {
 				pkt, err := session.ReadPacket()
 				if err != nil {
-					log.Println(name, err)
+					logs.Println(name, err)
 					break
 				}
 
@@ -101,7 +101,7 @@ func MakeNewRtspPull(id string, rtsp_url string, title string) (*RtspPuller, err
 			}
 			err = session.Close()
 			if err != nil {
-				log.Println("session Close error", err)
+				logs.Println("session Close error", err)
 			}
 
 			if rtspPuller.IsExit() {
@@ -109,7 +109,7 @@ func MakeNewRtspPull(id string, rtsp_url string, title string) (*RtspPuller, err
 				break
 			}
 
-			log.Println(name, "reconnect wait 5s")
+			logs.Println(name, "reconnect wait 5s")
 
 			time.Sleep(KeepSleepTime * time.Second)
 		}

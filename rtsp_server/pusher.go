@@ -74,7 +74,7 @@ func (pusher *Pusher) ID() string {
 	return pusher.RTSPClient.ID
 }
 
-func (pusher *Pusher) Logger() *log.Logger {
+func (pusher *Pusher) Logger() *logs.Logger {
 	if pusher.Session != nil {
 		return pusher.Session.logger
 	}
@@ -421,23 +421,23 @@ func (pusher *Pusher) shouldSequenceStart(rtp *RTPInfo) bool {
 		var realNALU uint8
 		payloadHeader := rtp.Payload[0] //https://tools.ietf.org/html/rfc6184#section-5.2
 		NaluType := uint8(payloadHeader & 0x1F)
-		// log.Printf("RTP Type:%d", NaluType)
+		// logs.Printf("RTP Type:%d", NaluType)
 		switch {
 		case NaluType <= 23:
 			realNALU = rtp.Payload[0]
-			// log.Printf("Single NAL:%d", NaluType)
+			// logs.Printf("Single NAL:%d", NaluType)
 		case NaluType == 28 || NaluType == 29:
 			realNALU = rtp.Payload[1]
 			if realNALU&0x40 != 0 {
-				// log.Printf("FU NAL End :%02X", realNALU)
+				// logs.Printf("FU NAL End :%02X", realNALU)
 			}
 			if realNALU&0x80 != 0 {
-				// log.Printf("FU NAL Begin :%02X", realNALU)
+				// logs.Printf("FU NAL Begin :%02X", realNALU)
 			} else {
 				return false
 			}
 		case NaluType == 24:
-			// log.Printf("STAP-A")
+			// logs.Printf("STAP-A")
 			off := 1
 			singleSPSPPS := 0
 			for {
@@ -490,11 +490,11 @@ func (pusher *Pusher) shouldSequenceStart(rtp *RTPInfo) bool {
 				rtpStart := (FUHeader & 0x80) != 0
 				if !rtpStart {
 					if (FUHeader & 0x40) != 0 {
-						//log.Printf("FU frame end")
+						//logs.Printf("FU frame end")
 					}
 					return false
 				} else {
-					//log.Printf("FU frame start")
+					//logs.Printf("FU frame start")
 				}
 				frameType = FUHeader & 0x3f
 			} else if headerType == 48 { //Aggregation Packets

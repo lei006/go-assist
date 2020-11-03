@@ -88,7 +88,7 @@ func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent 
 		Agent:                agent,
 		debugLogEnable:       debugLogEnable != 0,
 	}
-	client.logger = log.New(os.Stdout, fmt.Sprintf("[%s]", client.ID), log.LstdFlags|log.Lshortfile)
+	client.logger = logs.New(os.Stdout, fmt.Sprintf("[%s]", client.ID), logs.LstdFlags|logs.Lshortfile)
 
 	return
 }

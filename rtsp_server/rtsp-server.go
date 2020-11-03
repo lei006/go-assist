@@ -26,7 +26,7 @@ type Server struct {
 }
 
 var Instance *Server = &Server{
-	SessionLogger:  SessionLogger{log.New(os.Stdout, "[Live-Server-RTSP]", log.LstdFlags|log.Lshortfile)},
+	SessionLogger:  SessionLogger{logs.New(os.Stdout, "[Live-Server-RTSP]", logs.LstdFlags|logs.Lshortfile)},
 	Stoped:         true,
 	TCPPort:        554,
 	pushers:        make(map[string]*Pusher),
@@ -85,7 +85,7 @@ func (server *Server) Start() (err error) {
 						}
 						// ffmpeg -i ~/Downloads/720p.mp4 -s 640x360 -g 15 -c:a aac -hls_time 5 -hls_list_size 0 record.m3u8
 						cmd := exec.Command(ffmpeg, params...)
-						f, err := os.OpenFile(path.Join(dir, fmt.Sprintf("log.txt")), os.O_RDWR|os.O_CREATE, 0755)
+						f, err := os.OpenFile(path.Join(dir, fmt.Sprintf("logs.txt")), os.O_RDWR|os.O_CREATE, 0755)
 						if err == nil {
 							cmd.Stdout = f
 							cmd.Stderr = f

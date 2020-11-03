@@ -57,7 +57,7 @@ func NewRequest(content string) *Request {
 		return nil
 	}
 	if !strings.HasPrefix(items[2], "RTSP") {
-		log.Printf("invalid rtsp request, line[0] %s", lines[0])
+		logs.Printf("invalid rtsp request, line[0] %s", lines[0])
 		return nil
 	}
 	header := make(map[string]string)

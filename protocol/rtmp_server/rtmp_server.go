@@ -30,7 +30,7 @@ func (this *RtmpServer) Start() (bool, error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			//log.Error("rtmp serve panic: ", r)
+			//logs.Error("rtmp serve panic: ", r)
 			logs.Error("rtmp serve panic: ", r)
 		}
 	}()
@@ -49,7 +49,7 @@ func (this *RtmpServer) Start() (bool, error) {
 		//go this.Handle()
 
 		conn := core.NewConn(netconn, 4*1024)
-		//log.Debug("new client, connect remote: ", conn.RemoteAddr().String(),"local:", conn.LocalAddr().String())
+		//logs.Debug("new client, connect remote: ", conn.RemoteAddr().String(),"local:", conn.LocalAddr().String())
 		go this.handleConn(conn)
 	}
 
@@ -110,7 +110,7 @@ func (this *RtmpServer) handleConn(conn *core.Conn) error {
 
 				if s.getter != nil {
 					writeType := reflect.TypeOf(s.getter)
-					log.Debugf("handleConn:writeType=%v", writeType)
+					logs.Debug("handleConn:writeType=%v", writeType)
 					writer := s.getter.GetWriter(reader.Info())
 					s.handler.HandleWriter(writer)
 				}

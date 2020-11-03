@@ -20,7 +20,7 @@ func init() {
 	b := bytes.NewBuffer(nil)
 	encoder := &amf.Encoder{}
 	if _, err := encoder.Encode(b, SetDataFrame, amf.AMF0); err != nil {
-		log.Fatal(err)
+		logs.Fatal(err)
 	}
 	setFrameFrame = b.Bytes()
 }

@@ -55,7 +55,7 @@ func (s *UDPServer) HandleRTP(pack *RTPPack) {
 	panic(fmt.Errorf("session and RTSPClient both nil"))
 }
 
-func (s *UDPServer) Logger() *log.Logger {
+func (s *UDPServer) Logger() *logs.Logger {
 	if s.Session != nil {
 		return s.Session.logger
 	}

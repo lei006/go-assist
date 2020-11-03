@@ -164,7 +164,7 @@ func NewSession(server *Server, conn net.Conn) *Session {
 
 	//session.Init(session.ID, "rtsp-push")
 
-	session.logger = log.New(os.Stdout, fmt.Sprintf("[%s]", session.ID), log.LstdFlags|log.Lshortfile)
+	session.logger = logs.New(os.Stdout, fmt.Sprintf("[%s]", session.ID), logs.LstdFlags|logs.Lshortfile)
 
 	return session
 }
