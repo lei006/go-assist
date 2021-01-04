@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/protocol/intfs"
 
 	"github.com/gwuhaolin/livego/configure"
 )

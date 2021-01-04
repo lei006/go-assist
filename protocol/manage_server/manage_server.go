@@ -1,6 +1,6 @@
 package manage_server
 
-import "go-assist/protocol/intfs"
+import "github.com/lei006/go-assist/protocol/intfs"
 
 type ManageServer struct {
 }

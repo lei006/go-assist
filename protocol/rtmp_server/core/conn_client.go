@@ -3,7 +3,7 @@ package core
 import (
 	"bytes"
 	"fmt"
-	"go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/protocol/intfs"
 	"io"
 	"math/rand"
 	"net"

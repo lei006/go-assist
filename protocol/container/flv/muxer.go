@@ -12,7 +12,7 @@ import (
 	"github.com/gwuhaolin/livego/utils/pio"
 	"github.com/gwuhaolin/livego/utils/uid"
 
-	"go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/protocol/intfs"
 
 	"github.com/astaxie/beego/logs"
 )

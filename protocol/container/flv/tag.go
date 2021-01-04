@@ -3,7 +3,7 @@ package flv
 import (
 	"fmt"
 
-	"go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/protocol/intfs"
 )
 
 type flvTag struct {

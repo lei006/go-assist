@@ -22,7 +22,7 @@ import (
 	"net/http"
 
 	"github.com/go-errors/errors"
-	"go-assist/utils"
+	"github.com/lei006/go-assist/utils"
 )
 
 type HttpAgent struct {

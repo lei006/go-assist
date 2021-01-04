@@ -2,8 +2,8 @@ package core
 
 import (
 	"fmt"
-	"go-assist/protocol/container/flv"
-	"go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/protocol/container/flv"
+	"github.com/lei006/go-assist/protocol/intfs"
 	"net/url"
 	"reflect"
 	"strings"

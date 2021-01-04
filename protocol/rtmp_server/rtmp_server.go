@@ -2,8 +2,8 @@ package rtmp_server
 
 import (
 	"fmt"
-	"go-assist/protocol/intfs"
-	"go-assist/protocol/rtmp_server/core"
+	"github.com/lei006/go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/protocol/rtmp_server/core"
 	"net"
 
 	"github.com/astaxie/beego/logs"

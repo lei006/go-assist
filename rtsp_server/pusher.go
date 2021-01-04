@@ -1,7 +1,7 @@
 package rtsp_server
 
 import (
-	"go-assist/utils"
+	"github.com/lei006/go-assist/utils"
 	"os"
 
 	"log"

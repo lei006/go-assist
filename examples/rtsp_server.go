@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"go-assist/rtsp_server"
+	"github.com/lei006/go-assist/rtsp_server"
 )
 
 func main() {

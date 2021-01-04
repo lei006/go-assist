@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go-assist/protocol/rtmp_server"
+	"github.com/lei006/go-assist/protocol/rtmp_server"
 )
 
 func main() {
