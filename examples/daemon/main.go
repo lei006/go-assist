@@ -17,7 +17,7 @@ func main() {
 			Run()
 		})
 	*/
-	daemonTool.Run("test_app", "desc 测试", Run)
+	daemonTool.Run("test_app", "desc 111测试", Run)
 }
 
 func Run() {
