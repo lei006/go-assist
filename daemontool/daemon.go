@@ -1,4 +1,4 @@
-package utils
+package daemontool
 
 import (
 	"log"
@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lei006/go-assist/utils/zcli"
+	"github.com/lei006/go-assist/daemontool/zcli"
 )
 
 type DaemonTool struct {
