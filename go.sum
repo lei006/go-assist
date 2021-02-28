@@ -1,0 +1,4 @@
+github.com/sohaha/zlsgo v1.1.5 h1:CqCGM9OytgXWt3cWqDFzM8Egw9bR0ycYbPJRAzWPBQE=
+github.com/sohaha/zlsgo v1.1.5/go.mod h1:8jszf9qU6E2SJTQjxJ1LYKI717Zwa5YZx1gG0dxsukA=
+golang.org/x/sys v0.0.0-20210228012217-479acdf4ea46 h1:V066+OYJ66oTjnhm4Yrn7SXIwSCiDQJxpBxmvqb1N1c=
+golang.org/x/sys v0.0.0-20210228012217-479acdf4ea46/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
