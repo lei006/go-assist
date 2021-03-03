@@ -2,9 +2,10 @@ package cache
 
 import (
 	"bytes"
+
 	"github.com/lei006/go-assist/protocol/intfs"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 
 	"github.com/gwuhaolin/livego/protocol/amf"
 )

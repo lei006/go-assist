@@ -2,14 +2,15 @@ package core
 
 import (
 	"fmt"
-	"github.com/lei006/go-assist/protocol/container/flv"
-	"github.com/lei006/go-assist/protocol/intfs"
 	"net/url"
 	"reflect"
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/lei006/go-assist/protocol/container/flv"
+	"github.com/lei006/go-assist/protocol/intfs"
+
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/gwuhaolin/livego/utils/uid"
 )
 

@@ -2,11 +2,12 @@ package rtmp_server
 
 import (
 	"fmt"
-	"github.com/lei006/go-assist/protocol/intfs"
-	"github.com/lei006/go-assist/protocol/rtmp_server/core"
 	"net"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/lei006/go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/protocol/rtmp_server/core"
+
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/gwuhaolin/livego/configure"
 )
 
