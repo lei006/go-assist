@@ -1,0 +1,14 @@
+[Unit]
+Description=Anydev
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/root/anydev/anydev start
+ExecReload=/root/anydev/anydev reload
+ExecStop=/root/anydev/anydev stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+
