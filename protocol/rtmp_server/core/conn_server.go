@@ -3,10 +3,11 @@ package core
 import (
 	"bytes"
 	"fmt"
-	"github.com/lei006/go-assist/protocol/intfs"
 	"io"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/lei006/go-assist/protocol/intfs"
+
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/gwuhaolin/livego/protocol/amf"
 )
 

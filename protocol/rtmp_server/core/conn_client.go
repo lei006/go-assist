@@ -3,16 +3,17 @@ package core
 import (
 	"bytes"
 	"fmt"
-	"github.com/lei006/go-assist/protocol/intfs"
 	"io"
 	"math/rand"
 	"net"
 	neturl "net/url"
 	"strings"
 
+	"github.com/lei006/go-assist/protocol/intfs"
+
 	"github.com/gwuhaolin/livego/protocol/amf"
 
-	"github.com/astaxie/beego/logs"
+	"github.com/beego/beego/v2/core/logs"
 )
 
 var (
