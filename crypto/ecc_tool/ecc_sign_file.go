@@ -1,6 +1,16 @@
 package ecc_tool
 
-/*
+import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
+	"math/big"
+	"os"
+)
+
 //生成ECC椭圆曲线密钥对，保存到文件
 func GenerateECCKey() {
 	//生成密钥对
@@ -118,4 +128,3 @@ func VerifySignECC(msg []byte, rtext, stext []byte, path string) bool {
 	verify := ecdsa.Verify(publicKey, bytes, &r, &s)
 	return verify
 }
-*/

@@ -15,8 +15,8 @@ func test_sign(index int) {
 		return
 	}
 
-	//fmt.Println("pub_key", pub_key)
-	//fmt.Println("pri_key", pri_key)
+	fmt.Println(pub_key)
+	fmt.Println(pri_key)
 
 	//模拟发送者
 	//要发送的消息
@@ -36,6 +36,27 @@ func test_sign(index int) {
 
 	fmt.Println("验证结果：", index, verifySignECC, sign)
 
+}
+
+func test_file() {
+	//生成ECC密钥对文件
+	ecc_tool.GenerateECCKey()
+
+	//模拟发送者
+	//要发送的消息
+	msg := []byte("hello world")
+	//生成数字签名
+	rtext, stext := ecc_tool.SignECC(msg, "eccprivate.pem")
+
+	//模拟接受者
+	//接受到的消息
+	acceptmsg := []byte("hello world")
+	//接收到的签名
+	acceptrtext := rtext
+	acceptstext := stext
+	//验证签名
+	verifySignECC := ecc_tool.VerifySignECC(acceptmsg, acceptrtext, acceptstext, "eccpublic.pem")
+	fmt.Println("验证结果：", verifySignECC)
 }
 
 func main() {
