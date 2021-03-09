@@ -3,7 +3,7 @@ package cache
 import (
 	"github.com/lei006/go-assist/protocol/intfs"
 
-	"github.com/gwuhaolin/livego/configure"
+	"github.com/lei006/go-assist/livego/configure"
 )
 
 type Cache struct {

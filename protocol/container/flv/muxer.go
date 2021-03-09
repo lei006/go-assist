@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gwuhaolin/livego/configure"
-	"github.com/gwuhaolin/livego/protocol/amf"
-	"github.com/gwuhaolin/livego/utils/pio"
-	"github.com/gwuhaolin/livego/utils/uid"
+	"github.com/lei006/go-assist/livego/configure"
+	"github.com/lei006/go-assist/livego/protocol/amf"
+	"github.com/lei006/go-assist/livego/utils/pio"
+	"github.com/lei006/go-assist/livego/utils/uid"
 
 	"github.com/lei006/go-assist/protocol/intfs"
 

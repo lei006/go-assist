@@ -3,13 +3,12 @@ package rtmprelay
 import (
 	"bytes"
 	"fmt"
-	"github.com/gwuhaolin/livego/av"
 	"io"
 
-	"github.com/gwuhaolin/livego/protocol/amf"
-	"github.com/gwuhaolin/livego/protocol/rtmp/core"
-
-	log "github.com/sirupsen/logrus"
+	"github.com/beego/beego/v2/adapter/logs"
+	"github.com/lei006/go-assist/livego/protocol/amf"
+	"github.com/lei006/go-assist/livego/protocol/rtmp/core"
+	"github.com/lei006/go-assist/protocol/intfs"
 )
 
 var (

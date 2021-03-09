@@ -11,7 +11,7 @@ import (
 
 	"github.com/lei006/go-assist/protocol/intfs"
 
-	"github.com/gwuhaolin/livego/protocol/amf"
+	"github.com/lei006/go-assist/livego/protocol/amf"
 
 	"github.com/beego/beego/v2/core/logs"
 )

@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/gwuhaolin/livego/av"
-	"github.com/gwuhaolin/livego/configure"
-	"github.com/gwuhaolin/livego/protocol/rtmp/core"
-
-	log "github.com/sirupsen/logrus"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/lei006/go-assist/livego/configure"
+	"github.com/lei006/go-assist/livego/protocol/rtmp/core"
+	"github.com/lei006/go-assist/protocol/intfs"
 )
 
 type StaticPush struct {

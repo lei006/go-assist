@@ -3,9 +3,10 @@ package core
 import (
 	"encoding/binary"
 	"fmt"
+
 	"github.com/lei006/go-assist/protocol/intfs"
 
-	"github.com/gwuhaolin/livego/utils/pool"
+	"github.com/lei006/go-assist/livego/utils/pool"
 )
 
 type ChunkStream struct {

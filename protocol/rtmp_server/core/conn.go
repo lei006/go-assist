@@ -5,8 +5,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/gwuhaolin/livego/utils/pio"
-	"github.com/gwuhaolin/livego/utils/pool"
+	"github.com/lei006/go-assist/livego/utils/pio"
+	"github.com/lei006/go-assist/livego/utils/pool"
 )
 
 const (

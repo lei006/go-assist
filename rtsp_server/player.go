@@ -1,9 +1,10 @@
 package rtsp_server
 
 import (
-	"github.com/lei006/go-assist/utils"
 	"sync"
 	"time"
+
+	"github.com/lei006/go-assist/utils"
 )
 
 type Player struct {
