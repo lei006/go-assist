@@ -67,7 +67,7 @@ var defaultConf = ServerCfg{
 	ReadTimeout:     10,
 	GopNum:          1,
 	Server: Applications{{
-		Appname:    "live",
+		Appname:    "livertc",
 		Live:       true,
 		Hls:        true,
 		StaticPush: nil,
