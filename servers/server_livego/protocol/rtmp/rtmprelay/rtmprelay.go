@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/beego/beego/v2/adapter/logs"
-	"github.com/lei006/go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/servers/server_livego/av"
+
 	"github.com/lei006/go-assist/servers/server_livego/protocol/amf"
 	"github.com/lei006/go-assist/servers/server_livego/protocol/rtmp/core"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -38,13 +40,13 @@ func NewRtmpRelay(playurl *string, publishurl *string) *RtmpRelay {
 }
 
 func (self *RtmpRelay) rcvPlayChunkStream() {
-	logs.Debug("rcvPlayRtmpMediaPacket connectClient.Read...")
+	log.Debug("rcvPlayRtmpMediaPacket connectClient.Read...")
 	for {
 		var rc core.ChunkStream
 
 		if self.startflag == false {
 			self.connectPlayClient.Close(nil)
-			logs.Debug("rcvPlayChunkStream close: playurl=%s, publishurl=%s", self.PlayUrl, self.PublishUrl)
+			log.Debugf("rcvPlayChunkStream close: playurl=%s, publishurl=%s", self.PlayUrl, self.PublishUrl)
 			break
 		}
 		err := self.connectPlayClient.Read(&rc)
@@ -52,15 +54,15 @@ func (self *RtmpRelay) rcvPlayChunkStream() {
 		if err != nil && err == io.EOF {
 			break
 		}
-		//logs.Debug("connectPlayClient.Read return rc.TypeID=%v length=%d, err=%v", rc.TypeID, len(rc.Data), err)
+		//log.Debugf("connectPlayClient.Read return rc.TypeID=%v length=%d, err=%v", rc.TypeID, len(rc.Data), err)
 		switch rc.TypeID {
 		case 20, 17:
 			r := bytes.NewReader(rc.Data)
 			vs, err := self.connectPlayClient.DecodeBatch(r, amf.AMF0)
 
-			logs.Debug("rcvPlayRtmpMediaPacket: vs=%v, err=%v", vs, err)
+			log.Debugf("rcvPlayRtmpMediaPacket: vs=%v, err=%v", vs, err)
 		case 18:
-			logs.Debug("rcvPlayRtmpMediaPacket: metadata....")
+			log.Debug("rcvPlayRtmpMediaPacket: metadata....")
 		case 8, 9:
 			self.cs_chan <- rc
 		}
@@ -71,12 +73,12 @@ func (self *RtmpRelay) sendPublishChunkStream() {
 	for {
 		select {
 		case rc := <-self.cs_chan:
-			//logs.Debug("sendPublishChunkStream: rc.TypeID=%v length=%d", rc.TypeID, len(rc.Data))
+			//log.Debugf("sendPublishChunkStream: rc.TypeID=%v length=%d", rc.TypeID, len(rc.Data))
 			self.connectPublishClient.Write(rc)
 		case ctrlcmd := <-self.sndctrl_chan:
 			if ctrlcmd == STOP_CTRL {
 				self.connectPublishClient.Close(nil)
-				logs.Debug("sendPublishChunkStream close: playurl=%s, publishurl=%s", self.PlayUrl, self.PublishUrl)
+				log.Debugf("sendPublishChunkStream close: playurl=%s, publishurl=%s", self.PlayUrl, self.PublishUrl)
 				return
 			}
 		}
@@ -91,17 +93,17 @@ func (self *RtmpRelay) Start() error {
 	self.connectPlayClient = core.NewConnClient()
 	self.connectPublishClient = core.NewConnClient()
 
-	logs.Debug("play server addr:%v starting....", self.PlayUrl)
-	err := self.connectPlayClient.Start(self.PlayUrl, intfs.PLAY)
+	log.Debugf("play server addr:%v starting....", self.PlayUrl)
+	err := self.connectPlayClient.Start(self.PlayUrl, av.PLAY)
 	if err != nil {
-		logs.Debug("connectPlayClient.Start url=%v error", self.PlayUrl)
+		log.Debugf("connectPlayClient.Start url=%v error", self.PlayUrl)
 		return err
 	}
 
-	logs.Debug("publish server addr:%v starting....", self.PublishUrl)
-	err = self.connectPublishClient.Start(self.PublishUrl, intfs.PUBLISH)
+	log.Debugf("publish server addr:%v starting....", self.PublishUrl)
+	err = self.connectPublishClient.Start(self.PublishUrl, av.PUBLISH)
 	if err != nil {
-		logs.Debug("connectPublishClient.Start url=%v error", self.PublishUrl)
+		log.Debugf("connectPublishClient.Start url=%v error", self.PublishUrl)
 		self.connectPlayClient.Close(nil)
 		return err
 	}
@@ -115,7 +117,7 @@ func (self *RtmpRelay) Start() error {
 
 func (self *RtmpRelay) Stop() {
 	if !self.startflag {
-		logs.Debug("The rtmprelay already stoped, playurl=%s, publishurl=%s", self.PlayUrl, self.PublishUrl)
+		log.Debugf("The rtmprelay already stoped, playurl=%s, publishurl=%s", self.PlayUrl, self.PublishUrl)
 		return
 	}
 

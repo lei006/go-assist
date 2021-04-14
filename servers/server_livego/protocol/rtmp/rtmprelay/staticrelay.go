@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/lei006/go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/servers/server_livego/av"
 	"github.com/lei006/go-assist/servers/server_livego/configure"
 	"github.com/lei006/go-assist/servers/server_livego/protocol/rtmp/core"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type StaticPush struct {
 	RtmpUrl       string
-	packet_chan   chan *intfs.Packet
+	packet_chan   chan *av.Packet
 	sndctrl_chan  chan string
 	connectClient *core.ConnClient
 	startflag     bool
@@ -20,25 +21,34 @@ type StaticPush struct {
 
 var G_StaticPushMap = make(map[string](*StaticPush))
 var g_MapLock = new(sync.RWMutex)
+var G_PushUrlList []string = nil
 
 var (
 	STATIC_RELAY_STOP_CTRL = "STATIC_RTMPRELAY_STOP"
 )
 
 func GetStaticPushList(appname string) ([]string, error) {
-	pushurlList, ok := configure.GetStaticPushUrlList(appname)
+	if G_PushUrlList == nil {
+		// Do not unmarshel the config every time, lots of reflect works -gs
+		pushurlList, ok := configure.GetStaticPushUrlList(appname)
+		if !ok {
+			G_PushUrlList = []string{}
+		} else {
+			G_PushUrlList = pushurlList
+		}
+	}
 
-	if !ok {
+	if len(G_PushUrlList) == 0 {
 		return nil, fmt.Errorf("no static push url")
 	}
 
-	return pushurlList, nil
+	return G_PushUrlList, nil
 }
 
 func GetAndCreateStaticPushObject(rtmpurl string) *StaticPush {
 	g_MapLock.RLock()
 	staticpush, ok := G_StaticPushMap[rtmpurl]
-	logs.Debug("GetAndCreateStaticPushObject: %s, return %v", rtmpurl, ok)
+	log.Debugf("GetAndCreateStaticPushObject: %s, return %v", rtmpurl, ok)
 	if !ok {
 		g_MapLock.RUnlock()
 		newStaticpush := NewStaticPush(rtmpurl)
@@ -70,20 +80,20 @@ func ReleaseStaticPushObject(rtmpurl string) {
 	if _, ok := G_StaticPushMap[rtmpurl]; ok {
 		g_MapLock.RUnlock()
 
-		logs.Debug("ReleaseStaticPushObject %s ok", rtmpurl)
+		log.Debugf("ReleaseStaticPushObject %s ok", rtmpurl)
 		g_MapLock.Lock()
 		delete(G_StaticPushMap, rtmpurl)
 		g_MapLock.Unlock()
 	} else {
 		g_MapLock.RUnlock()
-		logs.Debug("ReleaseStaticPushObject: not find %s", rtmpurl)
+		log.Debugf("ReleaseStaticPushObject: not find %s", rtmpurl)
 	}
 }
 
 func NewStaticPush(rtmpurl string) *StaticPush {
 	return &StaticPush{
 		RtmpUrl:       rtmpurl,
-		packet_chan:   make(chan *intfs.Packet, 500),
+		packet_chan:   make(chan *av.Packet, 500),
 		sndctrl_chan:  make(chan string),
 		connectClient: nil,
 		startflag:     false,
@@ -97,13 +107,13 @@ func (self *StaticPush) Start() error {
 
 	self.connectClient = core.NewConnClient()
 
-	logs.Debug("static publish server addr:%v starting....", self.RtmpUrl)
+	log.Debugf("static publish server addr:%v starting....", self.RtmpUrl)
 	err := self.connectClient.Start(self.RtmpUrl, "publish")
 	if err != nil {
-		logs.Debug("connectClient.Start url=%v error", self.RtmpUrl)
+		log.Debugf("connectClient.Start url=%v error", self.RtmpUrl)
 		return err
 	}
-	logs.Debug("static publish server addr:%v started, streamid=%d", self.RtmpUrl, self.connectClient.GetStreamId())
+	log.Debugf("static publish server addr:%v started, streamid=%d", self.RtmpUrl, self.connectClient.GetStreamId())
 	go self.HandleAvPacket()
 
 	self.startflag = true
@@ -115,12 +125,12 @@ func (self *StaticPush) Stop() {
 		return
 	}
 
-	logs.Debug("StaticPush Stop: %s", self.RtmpUrl)
+	log.Debugf("StaticPush Stop: %s", self.RtmpUrl)
 	self.sndctrl_chan <- STATIC_RELAY_STOP_CTRL
 	self.startflag = false
 }
 
-func (self *StaticPush) WriteAvPacket(packet *intfs.Packet) {
+func (self *StaticPush) WriteAvPacket(packet *av.Packet) {
 	if !self.startflag {
 		return
 	}
@@ -128,7 +138,7 @@ func (self *StaticPush) WriteAvPacket(packet *intfs.Packet) {
 	self.packet_chan <- packet
 }
 
-func (self *StaticPush) sendPacket(p *intfs.Packet) {
+func (self *StaticPush) sendPacket(p *av.Packet) {
 	if !self.startflag {
 		return
 	}
@@ -140,15 +150,15 @@ func (self *StaticPush) sendPacket(p *intfs.Packet) {
 	cs.Timestamp = p.TimeStamp
 	//cs.Timestamp += v.BaseTimeStamp()
 
-	//logs.Printf("Static sendPacket: rtmpurl=%s, length=%d, streamid=%d",
+	//log.Printf("Static sendPacket: rtmpurl=%s, length=%d, streamid=%d",
 	//	self.RtmpUrl, len(p.Data), cs.StreamID)
 	if p.IsVideo {
-		cs.TypeID = intfs.TAG_VIDEO
+		cs.TypeID = av.TAG_VIDEO
 	} else {
 		if p.IsMetadata {
-			cs.TypeID = intfs.TAG_SCRIPTDATAAMF0
+			cs.TypeID = av.TAG_SCRIPTDATAAMF0
 		} else {
-			cs.TypeID = intfs.TAG_AUDIO
+			cs.TypeID = av.TAG_AUDIO
 		}
 	}
 
@@ -157,7 +167,7 @@ func (self *StaticPush) sendPacket(p *intfs.Packet) {
 
 func (self *StaticPush) HandleAvPacket() {
 	if !self.IsStart() {
-		logs.Debug("static push %s not started", self.RtmpUrl)
+		log.Debugf("static push %s not started", self.RtmpUrl)
 		return
 	}
 
@@ -168,7 +178,7 @@ func (self *StaticPush) HandleAvPacket() {
 		case ctrlcmd := <-self.sndctrl_chan:
 			if ctrlcmd == STATIC_RELAY_STOP_CTRL {
 				self.connectClient.Close(nil)
-				logs.Debug("Static HandleAvPacket close: publishurl=%s", self.RtmpUrl)
+				log.Debugf("Static HandleAvPacket close: publishurl=%s", self.RtmpUrl)
 				return
 			}
 		}

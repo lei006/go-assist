@@ -1,17 +1,21 @@
-package core
+package rtmp
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"reflect"
 	"strings"
 	"time"
 
-	"github.com/lei006/go-assist/protocol/container/flv"
-	"github.com/lei006/go-assist/protocol/intfs"
-
-	"github.com/beego/beego/v2/core/logs"
 	"github.com/lei006/go-assist/servers/server_livego/utils/uid"
+
+	"github.com/lei006/go-assist/servers/server_livego/av"
+	"github.com/lei006/go-assist/servers/server_livego/configure"
+	"github.com/lei006/go-assist/servers/server_livego/container/flv"
+	"github.com/lei006/go-assist/servers/server_livego/protocol/rtmp/core"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -20,9 +24,139 @@ const (
 )
 
 var (
-	readTimeout  = 10000
-	writeTimeout = 10000
+	readTimeout  = configure.Config.GetInt("read_timeout")
+	writeTimeout = configure.Config.GetInt("write_timeout")
 )
+
+type Client struct {
+	handler av.Handler
+	getter  av.GetWriter
+}
+
+func NewRtmpClient(h av.Handler, getter av.GetWriter) *Client {
+	return &Client{
+		handler: h,
+		getter:  getter,
+	}
+}
+
+func (c *Client) Dial(url string, method string) error {
+	connClient := core.NewConnClient()
+	if err := connClient.Start(url, method); err != nil {
+		return err
+	}
+	if method == av.PUBLISH {
+		writer := NewVirWriter(connClient)
+		log.Debugf("client Dial call NewVirWriter url=%s, method=%s", url, method)
+		c.handler.HandleWriter(writer)
+	} else if method == av.PLAY {
+		reader := NewVirReader(connClient)
+		log.Debugf("client Dial call NewVirReader url=%s, method=%s", url, method)
+		c.handler.HandleReader(reader)
+		if c.getter != nil {
+			writer := c.getter.GetWriter(reader.Info())
+			c.handler.HandleWriter(writer)
+		}
+	}
+	return nil
+}
+
+func (c *Client) GetHandle() av.Handler {
+	return c.handler
+}
+
+type Server struct {
+	handler av.Handler
+	getter  av.GetWriter
+}
+
+func NewRtmpServer(h av.Handler, getter av.GetWriter) *Server {
+	return &Server{
+		handler: h,
+		getter:  getter,
+	}
+}
+
+func (s *Server) Serve(listener net.Listener) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("rtmp serve panic: ", r)
+		}
+	}()
+
+	for {
+		var netconn net.Conn
+		netconn, err = listener.Accept()
+		if err != nil {
+			return
+		}
+		conn := core.NewConn(netconn, 4*1024)
+		log.Debug("new client, connect remote: ", conn.RemoteAddr().String(),
+			"local:", conn.LocalAddr().String())
+		go s.handleConn(conn)
+	}
+}
+
+func (s *Server) handleConn(conn *core.Conn) error {
+	if err := conn.HandshakeServer(); err != nil {
+		conn.Close()
+		log.Error("handleConn HandshakeServer err: ", err)
+		return err
+	}
+	connServer := core.NewConnServer(conn)
+
+	if err := connServer.ReadMsg(); err != nil {
+		conn.Close()
+		log.Error("handleConn read msg err: ", err)
+		return err
+	}
+
+	appname, name, _ := connServer.GetInfo()
+
+	if ret := appname == "livertc"; !ret {
+		err := fmt.Errorf("application name=%s is not configured", appname)
+		conn.Close()
+		log.Error("CheckAppName err: ", err)
+		return err
+	}
+
+	log.Debugf("handleConn: IsPublisher=%v", connServer.IsPublisher())
+	if connServer.IsPublisher() {
+
+		/*
+			channel, err := configure.RoomKeys.GetChannel(name)
+			if err != nil {
+				err := fmt.Errorf("invalid key err=%s", err.Error())
+				conn.Close()
+				log.Error("CheckKey err: ", err)
+				return err
+			}
+		*/
+		connServer.PublishInfo.Name = name
+		if pushlist, ret := configure.GetStaticPushUrlList(appname); ret && (pushlist != nil) {
+			log.Debugf("GetStaticPushUrlList: %v", pushlist)
+		}
+		reader := NewVirReader(connServer)
+		s.handler.HandleReader(reader)
+		log.Debugf("new publisher: %+v", reader.Info())
+
+		if s.getter != nil {
+			writeType := reflect.TypeOf(s.getter)
+			log.Debugf("handleConn:writeType=%v", writeType)
+			writer := s.getter.GetWriter(reader.Info())
+			s.handler.HandleWriter(writer)
+		}
+		//FIXME: should flv should be configurable, not always on -gs
+		//flvWriter := new(flv.FlvDvr)
+		//s.handler.HandleWriter(flvWriter.GetWriter(reader.Info()))
+	} else {
+		writer := NewVirWriter(connServer)
+		log.Debugf("new player: %+v", writer.Info())
+		s.handler.HandleWriter(writer)
+	}
+
+	return nil
+}
 
 type GetInFo interface {
 	GetInfo() (string, string, string)
@@ -31,8 +165,8 @@ type GetInFo interface {
 type StreamReadWriteCloser interface {
 	GetInFo
 	Close(error)
-	Write(ChunkStream) error
-	Read(c *ChunkStream) error
+	Write(core.ChunkStream) error
+	Read(c *core.ChunkStream) error
 }
 
 type StaticsBW struct {
@@ -51,9 +185,9 @@ type StaticsBW struct {
 type VirWriter struct {
 	Uid    string
 	closed bool
-	intfs.RWBaser
+	av.RWBaser
 	conn        StreamReadWriteCloser
-	packetQueue chan *intfs.Packet
+	packetQueue chan *av.Packet
 	WriteBWInfo StaticsBW
 }
 
@@ -61,8 +195,8 @@ func NewVirWriter(conn StreamReadWriteCloser) *VirWriter {
 	ret := &VirWriter{
 		Uid:         uid.NewId(),
 		conn:        conn,
-		RWBaser:     intfs.NewRWBaser(time.Second * time.Duration(writeTimeout)),
-		packetQueue: make(chan *intfs.Packet, maxQueueNum),
+		RWBaser:     av.NewRWBaser(time.Second * time.Duration(writeTimeout)),
+		packetQueue: make(chan *av.Packet, maxQueueNum),
 		WriteBWInfo: StaticsBW{0, 0, 0, 0, 0, 0, 0, 0},
 	}
 
@@ -70,7 +204,7 @@ func NewVirWriter(conn StreamReadWriteCloser) *VirWriter {
 	go func() {
 		err := ret.SendPacket()
 		if err != nil {
-			logs.Warning(err)
+			log.Warning(err)
 		}
 	}()
 	return ret
@@ -101,7 +235,7 @@ func (v *VirWriter) SaveStatics(streamid uint32, length uint64, isVideoFlag bool
 }
 
 func (v *VirWriter) Check() {
-	var c ChunkStream
+	var c core.ChunkStream
 	for {
 		if err := v.conn.Read(&c); err != nil {
 			v.Close(err)
@@ -110,14 +244,14 @@ func (v *VirWriter) Check() {
 	}
 }
 
-func (v *VirWriter) DropPacket(pktQue chan *intfs.Packet, info intfs.Info) {
-	logs.Warn("[%v] packet queue max!!!", info)
+func (v *VirWriter) DropPacket(pktQue chan *av.Packet, info av.Info) {
+	log.Warningf("[%v] packet queue max!!!", info)
 	for i := 0; i < maxQueueNum-84; i++ {
 		tmpPkt, ok := <-pktQue
 		// try to don't drop audio
 		if ok && tmpPkt.IsAudio {
 			if len(pktQue) > maxQueueNum-2 {
-				logs.Debug("drop audio pkt")
+				log.Debug("drop audio pkt")
 				<-pktQue
 			} else {
 				pktQue <- tmpPkt
@@ -126,23 +260,23 @@ func (v *VirWriter) DropPacket(pktQue chan *intfs.Packet, info intfs.Info) {
 		}
 
 		if ok && tmpPkt.IsVideo {
-			videoPkt, ok := tmpPkt.Header.(intfs.VideoPacketHeader)
+			videoPkt, ok := tmpPkt.Header.(av.VideoPacketHeader)
 			// dont't drop sps config and dont't drop key frame
 			if ok && (videoPkt.IsSeq() || videoPkt.IsKeyFrame()) {
 				pktQue <- tmpPkt
 			}
 			if len(pktQue) > maxQueueNum-10 {
-				logs.Debug("drop video pkt")
+				log.Debug("drop video pkt")
 				<-pktQue
 			}
 		}
 
 	}
-	logs.Debug("packet queue len: ", len(pktQue))
+	log.Debug("packet queue len: ", len(pktQue))
 }
 
 //
-func (v *VirWriter) Write(p *intfs.Packet) (err error) {
+func (v *VirWriter) Write(p *av.Packet) (err error) {
 	err = nil
 
 	if v.closed {
@@ -165,7 +299,7 @@ func (v *VirWriter) Write(p *intfs.Packet) (err error) {
 
 func (v *VirWriter) SendPacket() error {
 	Flush := reflect.ValueOf(v.conn).MethodByName("Flush")
-	var cs ChunkStream
+	var cs core.ChunkStream
 	for {
 		p, ok := <-v.packetQueue
 		if ok {
@@ -176,12 +310,12 @@ func (v *VirWriter) SendPacket() error {
 			cs.Timestamp += v.BaseTimeStamp()
 
 			if p.IsVideo {
-				cs.TypeID = intfs.TAG_VIDEO
+				cs.TypeID = av.TAG_VIDEO
 			} else {
 				if p.IsMetadata {
-					cs.TypeID = intfs.TAG_SCRIPTDATAAMF0
+					cs.TypeID = av.TAG_SCRIPTDATAAMF0
 				} else {
-					cs.TypeID = intfs.TAG_AUDIO
+					cs.TypeID = av.TAG_AUDIO
 				}
 			}
 
@@ -201,13 +335,13 @@ func (v *VirWriter) SendPacket() error {
 	}
 }
 
-func (v *VirWriter) Info() (ret intfs.Info) {
+func (v *VirWriter) Info() (ret av.Info) {
 	ret.UID = v.Uid
 	_, _, URL := v.conn.GetInfo()
 	ret.URL = URL
 	_url, err := url.Parse(URL)
 	if err != nil {
-		logs.Warning(err)
+		log.Warning(err)
 	}
 	ret.Key = strings.TrimLeft(_url.Path, "/")
 	ret.Inter = true
@@ -215,7 +349,7 @@ func (v *VirWriter) Info() (ret intfs.Info) {
 }
 
 func (v *VirWriter) Close(err error) {
-	logs.Warning("player ", v.Info(), "closed: "+err.Error())
+	log.Warning("player ", v.Info(), "closed: "+err.Error())
 	if !v.closed {
 		close(v.packetQueue)
 	}
@@ -225,7 +359,7 @@ func (v *VirWriter) Close(err error) {
 
 type VirReader struct {
 	Uid string
-	intfs.RWBaser
+	av.RWBaser
 	demuxer    *flv.Demuxer
 	conn       StreamReadWriteCloser
 	ReadBWInfo StaticsBW
@@ -235,7 +369,7 @@ func NewVirReader(conn StreamReadWriteCloser) *VirReader {
 	return &VirReader{
 		Uid:        uid.NewId(),
 		conn:       conn,
-		RWBaser:    intfs.NewRWBaser(time.Second * time.Duration(writeTimeout)),
+		RWBaser:    av.NewRWBaser(time.Second * time.Duration(writeTimeout)),
 		demuxer:    flv.NewDemuxer(),
 		ReadBWInfo: StaticsBW{0, 0, 0, 0, 0, 0, 0, 0},
 	}
@@ -256,7 +390,7 @@ func (v *VirReader) SaveStatics(streamid uint32, length uint64, isVideoFlag bool
 	} else if (nowInMS - v.ReadBWInfo.LastTimestamp) >= SAVE_STATICS_INTERVAL {
 		diffTimestamp := (nowInMS - v.ReadBWInfo.LastTimestamp) / 1000
 
-		//logs.Printf("now=%d, last=%d, diff=%d", nowInMS, v.ReadBWInfo.LastTimestamp, diffTimestamp)
+		//log.Printf("now=%d, last=%d, diff=%d", nowInMS, v.ReadBWInfo.LastTimestamp, diffTimestamp)
 		v.ReadBWInfo.VideoSpeedInBytesperMS = (v.ReadBWInfo.VideoDatainBytes - v.ReadBWInfo.LastVideoDatainBytes) * 8 / uint64(diffTimestamp) / 1000
 		v.ReadBWInfo.AudioSpeedInBytesperMS = (v.ReadBWInfo.AudioDatainBytes - v.ReadBWInfo.LastAudioDatainBytes) * 8 / uint64(diffTimestamp) / 1000
 
@@ -266,31 +400,31 @@ func (v *VirReader) SaveStatics(streamid uint32, length uint64, isVideoFlag bool
 	}
 }
 
-func (v *VirReader) Read(p *intfs.Packet) (err error) {
+func (v *VirReader) Read(p *av.Packet) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			logs.Warning("rtmp read packet panic: ", r)
+			log.Warning("rtmp read packet panic: ", r)
 		}
 	}()
 
 	v.SetPreTime()
-	var cs ChunkStream
+	var cs core.ChunkStream
 	for {
 		err = v.conn.Read(&cs)
 		if err != nil {
 			return err
 		}
-		if cs.TypeID == intfs.TAG_AUDIO ||
-			cs.TypeID == intfs.TAG_VIDEO ||
-			cs.TypeID == intfs.TAG_SCRIPTDATAAMF0 ||
-			cs.TypeID == intfs.TAG_SCRIPTDATAAMF3 {
+		if cs.TypeID == av.TAG_AUDIO ||
+			cs.TypeID == av.TAG_VIDEO ||
+			cs.TypeID == av.TAG_SCRIPTDATAAMF0 ||
+			cs.TypeID == av.TAG_SCRIPTDATAAMF3 {
 			break
 		}
 	}
 
-	p.IsAudio = cs.TypeID == intfs.TAG_AUDIO
-	p.IsVideo = cs.TypeID == intfs.TAG_VIDEO
-	p.IsMetadata = cs.TypeID == intfs.TAG_SCRIPTDATAAMF0 || cs.TypeID == intfs.TAG_SCRIPTDATAAMF3
+	p.IsAudio = cs.TypeID == av.TAG_AUDIO
+	p.IsVideo = cs.TypeID == av.TAG_VIDEO
+	p.IsMetadata = cs.TypeID == av.TAG_SCRIPTDATAAMF0 || cs.TypeID == av.TAG_SCRIPTDATAAMF3
 	p.StreamID = cs.StreamID
 	p.Data = cs.Data
 	p.TimeStamp = cs.Timestamp
@@ -300,19 +434,19 @@ func (v *VirReader) Read(p *intfs.Packet) (err error) {
 	return err
 }
 
-func (v *VirReader) Info() (ret intfs.Info) {
+func (v *VirReader) Info() (ret av.Info) {
 	ret.UID = v.Uid
 	_, _, URL := v.conn.GetInfo()
 	ret.URL = URL
 	_url, err := url.Parse(URL)
 	if err != nil {
-		logs.Warning(err)
+		log.Warning(err)
 	}
 	ret.Key = strings.TrimLeft(_url.Path, "/")
 	return
 }
 
 func (v *VirReader) Close(err error) {
-	logs.Debug("publisher ", v.Info(), "closed: "+err.Error())
+	log.Debug("publisher ", v.Info(), "closed: "+err.Error())
 	v.conn.Close(err)
 }

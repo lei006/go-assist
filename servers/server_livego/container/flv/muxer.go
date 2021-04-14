@@ -7,14 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lei006/go-assist/servers/server_livego/av"
 	"github.com/lei006/go-assist/servers/server_livego/configure"
 	"github.com/lei006/go-assist/servers/server_livego/protocol/amf"
 	"github.com/lei006/go-assist/servers/server_livego/utils/pio"
 	"github.com/lei006/go-assist/servers/server_livego/utils/uid"
 
-	"github.com/lei006/go-assist/protocol/intfs"
-
-	"github.com/beego/beego/v2/core/logs"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -22,17 +21,17 @@ var (
 )
 
 /*
-func NewFlv(handler intfs.Handler, info intfs.Info) {
+func NewFlv(handler av.Handler, info av.Info) {
 	patths := strings.SplitN(info.Key, "/", 2)
 
 	if len(patths) != 2 {
-		logs.Warning("invalid info")
+		log.Warning("invalid info")
 		return
 	}
 
 	w, err := os.OpenFile(*flvFile, os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
-		logs.Error("open file error: ", err)
+		log.Error("open file error: ", err)
 	}
 
 	writer := NewFLVWriter(patths[0], patths[1], info.URL, w)
@@ -41,7 +40,7 @@ func NewFlv(handler intfs.Handler, info intfs.Info) {
 
 	writer.Wait()
 	// close flv file
-	logs.Debug("close flv file")
+	log.Debug("close flv file")
 	writer.ctx.Close()
 }
 */
@@ -52,7 +51,7 @@ const (
 
 type FLVWriter struct {
 	Uid string
-	intfs.RWBaser
+	av.RWBaser
 	app, title, url string
 	buf             []byte
 	closed          chan struct{}
@@ -66,7 +65,7 @@ func NewFLVWriter(app, title, url string, ctx *os.File) *FLVWriter {
 		title:   title,
 		url:     url,
 		ctx:     ctx,
-		RWBaser: intfs.NewRWBaser(time.Second * 10),
+		RWBaser: av.NewRWBaser(time.Second * 10),
 		closed:  make(chan struct{}),
 		buf:     make([]byte, headerLen),
 	}
@@ -78,20 +77,20 @@ func NewFLVWriter(app, title, url string, ctx *os.File) *FLVWriter {
 	return ret
 }
 
-func (writer *FLVWriter) Write(p *intfs.Packet) error {
+func (writer *FLVWriter) Write(p *av.Packet) error {
 	writer.RWBaser.SetPreTime()
 	h := writer.buf[:headerLen]
-	typeID := intfs.TAG_VIDEO
+	typeID := av.TAG_VIDEO
 	if !p.IsVideo {
 		if p.IsMetadata {
 			var err error
-			typeID = intfs.TAG_SCRIPTDATAAMF0
+			typeID = av.TAG_SCRIPTDATAAMF0
 			p.Data, err = amf.MetaDataReform(p.Data, amf.DEL)
 			if err != nil {
 				return err
 			}
 		} else {
-			typeID = intfs.TAG_AUDIO
+			typeID = av.TAG_AUDIO
 		}
 	}
 	dataLen := len(p.Data)
@@ -136,7 +135,7 @@ func (writer *FLVWriter) Close(error) {
 	close(writer.closed)
 }
 
-func (writer *FLVWriter) Info() (ret intfs.Info) {
+func (writer *FLVWriter) Info() (ret av.Info) {
 	ret.UID = writer.Uid
 	ret.URL = writer.url
 	ret.Key = writer.app + "/" + writer.title
@@ -145,10 +144,10 @@ func (writer *FLVWriter) Info() (ret intfs.Info) {
 
 type FlvDvr struct{}
 
-func (f *FlvDvr) GetWriter(info intfs.Info) intfs.WritePacketer {
+func (f *FlvDvr) GetWriter(info av.Info) av.WriteCloser {
 	paths := strings.SplitN(info.Key, "/", 2)
 	if len(paths) != 2 {
-		logs.Warning("invalid info")
+		log.Warning("invalid info")
 		return nil
 	}
 
@@ -156,19 +155,19 @@ func (f *FlvDvr) GetWriter(info intfs.Info) intfs.WritePacketer {
 
 	err := os.MkdirAll(path.Join(flvDir, paths[0]), 0755)
 	if err != nil {
-		logs.Error("mkdir error: ", err)
+		log.Error("mkdir error: ", err)
 		return nil
 	}
 
 	fileName := fmt.Sprintf("%s_%d.%s", path.Join(flvDir, info.Key), time.Now().Unix(), "flv")
-	logs.Debug("flv dvr save stream to: ", fileName)
+	log.Debug("flv dvr save stream to: ", fileName)
 	w, err := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
-		logs.Error("open file error: ", err)
+		log.Error("open file error: ", err)
 		return nil
 	}
 
 	writer := NewFLVWriter(paths[0], paths[1], info.URL, w)
-	logs.Debug("new flv dvr: ", writer.Info())
+	log.Debug("new flv dvr: ", writer.Info())
 	return writer
 }

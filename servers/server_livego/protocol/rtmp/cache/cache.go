@@ -1,8 +1,7 @@
 package cache
 
 import (
-	"github.com/lei006/go-assist/protocol/intfs"
-
+	"github.com/lei006/go-assist/servers/server_livego/av"
 	"github.com/lei006/go-assist/servers/server_livego/configure"
 )
 
@@ -22,16 +21,16 @@ func NewCache() *Cache {
 	}
 }
 
-func (cache *Cache) Write(p intfs.Packet) {
+func (cache *Cache) Write(p av.Packet) {
 	if p.IsMetadata {
 		cache.metadata.Write(&p)
 		return
 	} else {
 		if !p.IsVideo {
-			ah, ok := p.Header.(intfs.AudioPacketHeader)
+			ah, ok := p.Header.(av.AudioPacketHeader)
 			if ok {
-				if ah.SoundFormat() == intfs.SOUND_AAC &&
-					ah.AACPacketType() == intfs.AAC_SEQHDR {
+				if ah.SoundFormat() == av.SOUND_AAC &&
+					ah.AACPacketType() == av.AAC_SEQHDR {
 					cache.audioSeq.Write(&p)
 					return
 				} else {
@@ -40,7 +39,7 @@ func (cache *Cache) Write(p intfs.Packet) {
 			}
 
 		} else {
-			vh, ok := p.Header.(intfs.VideoPacketHeader)
+			vh, ok := p.Header.(av.VideoPacketHeader)
 			if ok {
 				if vh.IsSeq() {
 					cache.videoSeq.Write(&p)
@@ -55,7 +54,7 @@ func (cache *Cache) Write(p intfs.Packet) {
 	cache.gop.Write(&p)
 }
 
-func (cache *Cache) Send(w intfs.WriteCloser) error {
+func (cache *Cache) Send(w av.WriteCloser) error {
 	if err := cache.metadata.Send(w); err != nil {
 		return err
 	}

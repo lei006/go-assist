@@ -8,7 +8,7 @@ import (
 	"github.com/lei006/go-assist/protocol/rtmp_server/core"
 
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/lei006/go-assist/livego/configure"
+	"github.com/lei006/go-assist/servers/server_livego/configure"
 )
 
 type RtmpServer struct {

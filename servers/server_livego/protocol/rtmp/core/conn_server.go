@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/lei006/go-assist/protocol/intfs"
-
-	"github.com/beego/beego/v2/core/logs"
+	"github.com/lei006/go-assist/servers/server_livego/av"
 	"github.com/lei006/go-assist/servers/server_livego/protocol/amf"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -251,7 +251,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 	if err != nil && err != io.EOF {
 		return err
 	}
-	// logs.Debug("rtmp req: %#v", vs)
+	// log.Debugf("rtmp req: %#v", vs)
 	switch vs[0].(type) {
 	case string:
 		switch vs[0].(string) {
@@ -278,7 +278,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 			}
 			connServer.done = true
 			connServer.isPublisher = true
-			logs.Debug("handle publish req done")
+			log.Debug("handle publish req done")
 		case cmdPlay:
 			if err = connServer.publishOrPlay(vs[1:]); err != nil {
 				return err
@@ -288,7 +288,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 			}
 			connServer.done = true
 			connServer.isPublisher = false
-			logs.Debug("handle play req done")
+			log.Debug("handle play req done")
 		case cmdFcpublish:
 			connServer.fcPublish(vs)
 		case cmdReleaseStream:
@@ -296,7 +296,7 @@ func (connServer *ConnServer) handleCmdMsg(c *ChunkStream) error {
 		case cmdFCUnpublish:
 		case cmdDeleteStream:
 		default:
-			logs.Debug("no support command=", vs[0].(string))
+			log.Debug("no support command=", vs[0].(string))
 		}
 	}
 
@@ -327,8 +327,8 @@ func (connServer *ConnServer) IsPublisher() bool {
 }
 
 func (connServer *ConnServer) Write(c ChunkStream) error {
-	if c.TypeID == intfs.TAG_SCRIPTDATAAMF0 ||
-		c.TypeID == intfs.TAG_SCRIPTDATAAMF3 {
+	if c.TypeID == av.TAG_SCRIPTDATAAMF0 ||
+		c.TypeID == av.TAG_SCRIPTDATAAMF3 {
 		var err error
 		if c.Data, err = amf.MetaDataReform(c.Data, amf.DEL); err != nil {
 			return err
