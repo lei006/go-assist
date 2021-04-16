@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+type RtspPacketCallback func(RtspPacket)
+
 type Server struct {
 	SessionLogger
 	TCPListener    *net.TCPListener
@@ -23,6 +25,8 @@ type Server struct {
 	pushersLock    sync.RWMutex
 	addPusherCh    chan *Pusher
 	removePusherCh chan *Pusher
+
+	packetCallbacks []RtspPacketCallback //更新回调列表
 }
 
 var Instance *Server = &Server{
@@ -159,6 +163,16 @@ func (server *Server) Start() (err error) {
 		go session.Start()
 	}
 	return
+}
+
+func (server *Server) SetPacketCallback(cb RtspPacketCallback) {
+	server.packetCallbacks = append(server.packetCallbacks, cb)
+}
+
+func (server *Server) CallPacketCall(packet RtspPacket) {
+	for _, val_cb := range server.packetCallbacks {
+		val_cb(packet)
+	}
 }
 
 func (server *Server) Stop() {
