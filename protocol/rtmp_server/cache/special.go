@@ -7,7 +7,7 @@ import (
 
 	"github.com/beego/beego/v2/core/logs"
 
-	"github.com/lei006/go-assist/livego/protocol/amf"
+	"github.com/lei006/go-assist/servers/server_livego/protocol/amf"
 )
 
 const (

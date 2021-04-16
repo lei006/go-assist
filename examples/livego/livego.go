@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/lei006/go-assist/livego/configure"
-	"github.com/lei006/go-assist/livego/protocol/hls"
-	"github.com/lei006/go-assist/livego/protocol/httpflv"
-	"github.com/lei006/go-assist/livego/protocol/rtmp"
+	"github.com/lei006/go-assist/servers/server_livego/configure"
+	"github.com/lei006/go-assist/servers/server_livego/protocol/hls"
+	"github.com/lei006/go-assist/servers/server_livego/protocol/httpflv"
+	"github.com/lei006/go-assist/servers/server_livego/protocol/rtmp"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -119,7 +119,7 @@ func (this *LiveServer) startHTTPFlv(port int, stream *rtmp.RtmpStream) error {
 	return nil
 }
 
-func main() {
+func main_test() {
 	fmt.Println("xxxxxx")
 
 	srv := LiveServer{}

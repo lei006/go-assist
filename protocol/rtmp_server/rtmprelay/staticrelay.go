@@ -5,9 +5,9 @@ import (
 	"sync"
 
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/lei006/go-assist/livego/configure"
-	"github.com/lei006/go-assist/livego/protocol/rtmp/core"
 	"github.com/lei006/go-assist/protocol/intfs"
+	"github.com/lei006/go-assist/servers/server_livego/configure"
+	"github.com/lei006/go-assist/servers/server_livego/protocol/rtmp/core"
 )
 
 type StaticPush struct {

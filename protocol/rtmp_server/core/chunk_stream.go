@@ -6,7 +6,7 @@ import (
 
 	"github.com/lei006/go-assist/protocol/intfs"
 
-	"github.com/lei006/go-assist/livego/utils/pool"
+	"github.com/lei006/go-assist/servers/server_livego/utils/pool"
 )
 
 type ChunkStream struct {

@@ -11,7 +11,7 @@ import (
 	"github.com/lei006/go-assist/protocol/intfs"
 
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/lei006/go-assist/livego/utils/uid"
+	"github.com/lei006/go-assist/servers/server_livego/utils/uid"
 )
 
 const (
