@@ -1,4 +1,4 @@
-package rtsp_server
+package server_rtsp
 
 import (
 	"bufio"
@@ -7,10 +7,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -88,7 +86,7 @@ func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent 
 		Agent:                agent,
 		debugLogEnable:       debugLogEnable != 0,
 	}
-	client.logger = logs.New(os.Stdout, fmt.Sprintf("[%s]", client.ID), logs.LstdFlags|logs.Lshortfile)
+	//client.logger = logs.New(os.Stdout, fmt.Sprintf("[%s]", client.ID), logs.LstdFlags|logs.Lshortfile)
 
 	return
 }

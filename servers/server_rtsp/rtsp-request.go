@@ -1,8 +1,7 @@
-package rtsp_server
+package server_rtsp
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -57,7 +56,7 @@ func NewRequest(content string) *Request {
 		return nil
 	}
 	if !strings.HasPrefix(items[2], "RTSP") {
-		logs.Printf("invalid rtsp request, line[0] %s", lines[0])
+		fmt.Printf("invalid rtsp request, line[0] %s", lines[0])
 		return nil
 	}
 	header := make(map[string]string)

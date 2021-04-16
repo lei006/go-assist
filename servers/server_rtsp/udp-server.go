@@ -1,4 +1,4 @@
-package rtsp_server
+package server_rtsp
 
 import (
 	"bytes"
@@ -55,7 +55,7 @@ func (s *UDPServer) HandleRTP(pack *RTPPack) {
 	panic(fmt.Errorf("session and RTSPClient both nil"))
 }
 
-func (s *UDPServer) Logger() *logs.Logger {
+func (s *UDPServer) Logger() *log.Logger {
 	if s.Session != nil {
 		return s.Session.logger
 	}

@@ -1,4 +1,4 @@
-package rtsp_server
+package server_rtsp
 
 import (
 	"net"

@@ -1,10 +1,9 @@
-package rtsp_server
+package server_rtsp
 
 import (
-	"github.com/lei006/go-assist/utils"
-	"os"
-
+	"fmt"
 	"log"
+
 	"strings"
 	"sync"
 	"time"
@@ -22,11 +21,6 @@ type Pusher struct {
 	spsppsInSTAPaPack bool
 	cond              *sync.Cond
 	queue             []*RTPPack
-
-	core.PublishContext
-	h264Parser *h264.Parser
-
-	binLogFile *os.File
 }
 
 func (pusher *Pusher) String() string {
@@ -74,7 +68,7 @@ func (pusher *Pusher) ID() string {
 	return pusher.RTSPClient.ID
 }
 
-func (pusher *Pusher) Logger() *logs.Logger {
+func (pusher *Pusher) Logger() *log.Logger {
 	if pusher.Session != nil {
 		return pusher.Session.logger
 	}
@@ -200,11 +194,13 @@ func NewPusher(session *Session) (pusher *Pusher) {
 func (pusher *Pusher) bindSession(session *Session) {
 	pusher.Session = session
 
-	//new_id := utils.Md5V2(session.Path)
+	/*
+		//new_id := utils.Md5V2(session.Path)
 
-	pusher.Init(session.Path, "rtsp")
-	pusher.SetState("connected")
-	pusher.h264Parser = h264.NewParser()
+		pusher.Init(session.Path, "rtsp")
+		pusher.SetState("connected")
+		pusher.h264Parser = h264.NewParser()
+	*/
 
 	session.RTPHandles = append(session.RTPHandles, func(pack *RTPPack) {
 		if session != pusher.Session {
@@ -230,7 +226,8 @@ func (pusher *Pusher) bindSession(session *Session) {
 
 func (pusher *Pusher) RebindSession(session *Session) bool {
 	if pusher.RTSPClient != nil {
-		pusher.Logger().Printf("call RebindSession[%s] to a Client-Pusher. got false", session.ID)
+		fmt.Printf("call RebindSession[%s] to a Client-Pusher. got false", session.ID)
+
 		return false
 	}
 	sess := pusher.Session
@@ -248,7 +245,7 @@ func (pusher *Pusher) RebindSession(session *Session) bool {
 
 func (pusher *Pusher) RebindClient(client *RTSPClient) bool {
 	if pusher.Session != nil {
-		pusher.Logger().Printf("call RebindClient[%s] to a Session-Pusher. got false", client.ID)
+		fmt.Printf("call RebindClient[%s] to a Session-Pusher. got false", client.ID)
 		return false
 	}
 	sess := pusher.RTSPClient
@@ -260,18 +257,20 @@ func (pusher *Pusher) RebindClient(client *RTSPClient) bool {
 }
 
 func (pusher *Pusher) QueueRTP(pack *RTPPack) *Pusher {
+	pusher.cond.L.Lock()
+	pusher.queue = append(pusher.queue, pack)
+	pusher.cond.Signal()
+	pusher.cond.L.Unlock()
+	return pusher
+}
+
+/*
+func (pusher *Pusher) QueueRTP(pack *RTPPack) *Pusher {
 
 	data := pack.Buffer.Bytes()
 
 	if pack.Type == RTP_TYPE_VIDEO {
-		/*
-			newPack, err := pusher.h264Parser.UnmarshalRTP(pack.Buffer.Bytes())
-			if err == nil && newPack != nil {
-				//newPack.SPS = pusher.SDPMap["video"].SpropParameterSets[0]
-				//newPack.PPS = pusher.SDPMap["video"].SpropParameterSets[1]
-				//pusher.Publish(newPack)
-			}
-		*/
+
 
 		//分解为rtp数据包
 
@@ -295,9 +294,9 @@ func (pusher *Pusher) QueueRTP(pack *RTPPack) *Pusher {
 
 	return pusher
 }
-
+*/
 func (pusher *Pusher) Start() {
-	logger := pusher.Logger()
+
 	for !pusher.Stoped() {
 		var pack *RTPPack
 		pusher.cond.L.Lock()
@@ -311,7 +310,7 @@ func (pusher *Pusher) Start() {
 		pusher.cond.L.Unlock()
 		if pack == nil {
 			if !pusher.Stoped() {
-				logger.Printf("pusher not stoped, but queue take out nil pack")
+				fmt.Printf("pusher not stoped, but queue take out nil pack")
 			}
 			continue
 		}
@@ -330,7 +329,7 @@ func (pusher *Pusher) Start() {
 
 func (pusher *Pusher) Stop() {
 
-	pusher.Close()
+	//pusher.Close()
 
 	if pusher.Session != nil {
 		pusher.Session.Stop()
@@ -365,7 +364,7 @@ func (pusher *Pusher) HasPlayer(player *Player) bool {
 }
 
 func (pusher *Pusher) AddPlayer(player *Player) *Pusher {
-	logger := pusher.Logger()
+	//logger := pusher.Logger()
 
 	if pusher.gopCacheEnable {
 		pusher.gopCacheLock.RLock()
@@ -380,21 +379,21 @@ func (pusher *Pusher) AddPlayer(player *Player) *Pusher {
 	if _, ok := pusher.players[player.ID]; !ok {
 		pusher.players[player.ID] = player
 		go player.Start()
-		logger.Printf("%v start, now player size[%d]", player, len(pusher.players))
+		fmt.Printf("%v start, now player size[%d]", player, len(pusher.players))
 	}
 	pusher.playersLock.Unlock()
 	return pusher
 }
 
 func (pusher *Pusher) RemovePlayer(player *Player) *Pusher {
-	logger := pusher.Logger()
+	//logger := pusher.Logger()
 	pusher.playersLock.Lock()
 	if len(pusher.players) == 0 {
 		pusher.playersLock.Unlock()
 		return pusher
 	}
 	delete(pusher.players, player.ID)
-	logger.Printf("%v end, now player size[%d]\n", player, len(pusher.players))
+	fmt.Printf("%v end, now player size[%d]\n", player, len(pusher.players))
 	pusher.playersLock.Unlock()
 	return pusher
 }

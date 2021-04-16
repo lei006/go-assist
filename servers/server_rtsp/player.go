@@ -1,10 +1,8 @@
-package rtsp_server
+package server_rtsp
 
 import (
 	"sync"
 	"time"
-
-	"github.com/lei006/go-assist/utils"
 )
 
 type Player struct {
@@ -15,8 +13,6 @@ type Player struct {
 	queueLimit           int
 	dropPacketWhenPaused bool
 	paused               bool
-
-	core.SubscribContext
 }
 
 func NewPlayer(session *Session, pusher *Pusher) (player *Player) {
@@ -39,17 +35,18 @@ func NewPlayer(session *Session, pusher *Pusher) (player *Player) {
 	})
 
 	//处理数据包...
-	handleWritePacket := func(packet *core.DataPacket) {
-		if packet.Type == core.DATA_PACKET_TYPE_VIDEO {
-			//videoTrack.WriteSample(media.Sample{Data: packet.Buffer, Samples: packet.Samples})
+	/*
+		handleWritePacket := func(packet *core.DataPacket) {
+			if packet.Type == core.DATA_PACKET_TYPE_VIDEO {
+				//videoTrack.WriteSample(media.Sample{Data: packet.Buffer, Samples: packet.Samples})
 
-			utils.PrintBinStr(packet.Buffer, 45, "end==")
+				utils.PrintBinStr(packet.Buffer, 45, "end==")
 
+			}
 		}
-	}
 
-	player.Init(player.Session.Path, handleWritePacket)
-
+		player.Init(player.Session.Path, handleWritePacket)
+	*/
 	return
 }
 
@@ -80,7 +77,7 @@ func (player *Player) Start() {
 	logger := player.logger
 	timer := time.Unix(0, 0)
 
-	for !player.IsExit() {
+	for !player.Stoped {
 		var pack *RTPPack
 		player.cond.L.Lock()
 		if len(player.queue) == 0 {
@@ -112,7 +109,7 @@ func (player *Player) Start() {
 		}
 	}
 
-	player.SetState("disconnected")
+	//player.SetState("disconnected")
 
 }
 

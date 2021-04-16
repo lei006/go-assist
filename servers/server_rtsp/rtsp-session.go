@@ -1,4 +1,4 @@
-package rtsp_server
+package server_rtsp
 
 import (
 	"bufio"
@@ -7,10 +7,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -164,7 +162,7 @@ func NewSession(server *Server, conn net.Conn) *Session {
 
 	//session.Init(session.ID, "rtsp-push")
 
-	session.logger = logs.New(os.Stdout, fmt.Sprintf("[%s]", session.ID), logs.LstdFlags|logs.Lshortfile)
+	//session.logger = logs.New(os.Stdout, fmt.Sprintf("[%s]", session.ID), logs.LstdFlags|logs.Lshortfile)
 
 	return session
 }

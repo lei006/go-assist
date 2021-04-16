@@ -1,4 +1,4 @@
-package rtsp_server
+package server_rtsp
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ type Server struct {
 }
 
 var Instance *Server = &Server{
-	SessionLogger:  SessionLogger{logs.New(os.Stdout, "[Live-Server-RTSP]", logs.LstdFlags|logs.Lshortfile)},
+	SessionLogger:  SessionLogger{log.New(os.Stdout, "[RTSPServer]", log.LstdFlags|log.Lshortfile)},
 	Stoped:         true,
 	TCPPort:        554,
 	pushers:        make(map[string]*Pusher),
