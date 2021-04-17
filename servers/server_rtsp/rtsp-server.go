@@ -3,7 +3,6 @@ package server_rtsp
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -13,6 +12,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type RtspPacketCallback func(url string, buffer *bytes.Buffer)
@@ -33,7 +34,7 @@ type Server struct {
 }
 
 var Instance *Server = &Server{
-	SessionLogger:  SessionLogger{log.New(os.Stdout, "[RTSPServer]", log.LstdFlags|log.Lshortfile)},
+	SessionLogger:  SessionLogger{logrus.New()},
 	Stoped:         true,
 	TCPPort:        554,
 	pushers:        make(map[string]*Pusher),

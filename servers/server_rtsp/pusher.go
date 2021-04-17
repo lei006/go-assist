@@ -2,11 +2,12 @@ package server_rtsp
 
 import (
 	"fmt"
-	"log"
 
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Pusher struct {

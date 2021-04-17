@@ -3,11 +3,12 @@ package server_rtsp
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"net"
 	"strconv"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type UDPServer struct {

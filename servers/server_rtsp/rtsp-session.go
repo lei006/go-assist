@@ -7,16 +7,15 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/teris-io/shortid"
 )
 
@@ -164,7 +163,7 @@ func NewSession(server *Server, conn net.Conn) *Session {
 
 	//session.Init(session.ID, "rtsp-push")
 
-	session.logger = log.New(os.Stdout, fmt.Sprintf("[%s]", session.ID), log.LstdFlags|log.Lshortfile)
+	session.logger = logrus.New()
 
 	return session
 }
