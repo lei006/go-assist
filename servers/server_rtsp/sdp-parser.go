@@ -3,7 +3,6 @@ package server_rtsp
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -87,11 +86,9 @@ func ParseSDP(sdpRaw string) map[string]*SDPInfo {
 									case "indexlength":
 										info.IndexLength, _ = strconv.Atoi(val)
 									case "sprop-parameter-sets":
-										fmt.Println("sprop-parameter-sets:", val)
 										fields := strings.Split(val, ",")
 										for _, field := range fields {
 											val, _ := base64.StdEncoding.DecodeString(field)
-											fmt.Println("           :", val)
 											info.SpropParameterSets = append(info.SpropParameterSets, val)
 										}
 

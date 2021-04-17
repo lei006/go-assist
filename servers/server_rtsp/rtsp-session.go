@@ -7,8 +7,10 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -162,7 +164,7 @@ func NewSession(server *Server, conn net.Conn) *Session {
 
 	//session.Init(session.ID, "rtsp-push")
 
-	//session.logger = logs.New(os.Stdout, fmt.Sprintf("[%s]", session.ID), logs.LstdFlags|logs.Lshortfile)
+	session.logger = log.New(os.Stdout, fmt.Sprintf("[%s]", session.ID), log.LstdFlags|log.Lshortfile)
 
 	return session
 }
@@ -447,10 +449,18 @@ func (session *Session) handleRequest(req *Request) {
 			res.Status = "Invalid URL"
 			return
 		}
-		session.Path = url.Path
 
+		session.Path = url.Path
 		session.SDPRaw = req.Body
 		session.SDPMap = ParseSDP(req.Body)
+
+		err = session.Server.CallClientFilter(req)
+		if err != nil {
+			res.StatusCode = 404
+			res.Status = err.Error()
+			return
+		}
+
 		sdp, ok := session.SDPMap["audio"]
 		if ok {
 			session.AControl = sdp.Control
@@ -496,6 +506,7 @@ func (session *Session) handleRequest(req *Request) {
 			addPusher = true
 		}
 		if addPusher {
+
 			session.Pusher = NewPusher(session)
 			addedToServer := session.Server.AddPusher(session.Pusher)
 			if !addedToServer {

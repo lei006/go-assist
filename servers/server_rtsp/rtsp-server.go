@@ -1,6 +1,7 @@
 package server_rtsp
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net"
@@ -14,7 +15,8 @@ import (
 	"time"
 )
 
-type RtspPacketCallback func(*RtspPacket)
+type RtspPacketCallback func(url string, buffer *bytes.Buffer)
+type ClientFilterCallback func(req *Request) error
 
 type Server struct {
 	SessionLogger
@@ -26,7 +28,8 @@ type Server struct {
 	addPusherCh    chan *Pusher
 	removePusherCh chan *Pusher
 
-	packetCallbacks []RtspPacketCallback //更新回调列表
+	packetCallbacks       []RtspPacketCallback   //更新回调列表
+	clientFilterCallbacks []ClientFilterCallback //客户端过滤回调列表
 }
 
 var Instance *Server = &Server{
@@ -165,14 +168,30 @@ func (server *Server) Start() (err error) {
 	return
 }
 
-func (server *Server) SetPacketCallback(cb RtspPacketCallback) {
+func (server *Server) PacketCallback(cb RtspPacketCallback) {
 	server.packetCallbacks = append(server.packetCallbacks, cb)
 }
 
-func (server *Server) CallPacketCall(packet *RtspPacket) {
+func (server *Server) CallPacketCall(url string, buffer *bytes.Buffer) {
 	for _, val_cb := range server.packetCallbacks {
-		val_cb(packet)
+		val_cb(url, buffer)
 	}
+}
+
+func (server *Server) ClientAsk(cb ClientFilterCallback) {
+	server.clientFilterCallbacks = append(server.clientFilterCallbacks, cb)
+}
+
+func (server *Server) CallClientFilter(req *Request) error {
+
+	for _, val_cb := range server.clientFilterCallbacks {
+		err := val_cb(req)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (server *Server) Stop() {
