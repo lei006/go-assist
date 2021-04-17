@@ -3,6 +3,7 @@ package datapacket
 type PacketType string
 
 const (
+	PacketType_RTP   PacketType = "RTP"
 	PacketType_H264  PacketType = "H264"
 	PacketType_H265  PacketType = "H265"
 	PacketType_FLV   PacketType = "FLV"

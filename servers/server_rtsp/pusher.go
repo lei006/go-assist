@@ -257,6 +257,10 @@ func (pusher *Pusher) RebindClient(client *RTSPClient) bool {
 }
 
 func (pusher *Pusher) QueueRTP(pack *RTPPack) *Pusher {
+
+	packet := MakeRtspPacket(pack)
+	pusher.Server().CallPacketCall(packet)
+
 	pusher.cond.L.Lock()
 	pusher.queue = append(pusher.queue, pack)
 	pusher.cond.Signal()

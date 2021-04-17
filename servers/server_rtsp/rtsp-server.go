@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type RtspPacketCallback func(RtspPacket)
+type RtspPacketCallback func(*RtspPacket)
 
 type Server struct {
 	SessionLogger
@@ -169,7 +169,7 @@ func (server *Server) SetPacketCallback(cb RtspPacketCallback) {
 	server.packetCallbacks = append(server.packetCallbacks, cb)
 }
 
-func (server *Server) CallPacketCall(packet RtspPacket) {
+func (server *Server) CallPacketCall(packet *RtspPacket) {
 	for _, val_cb := range server.packetCallbacks {
 		val_cb(packet)
 	}
