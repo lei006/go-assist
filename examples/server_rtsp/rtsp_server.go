@@ -12,7 +12,7 @@ func main() {
 	rtspServer := server_rtsp.GetServer()
 	var index int
 	rtspServer.PacketCallback(func(url string, buffer *bytes.Buffer) {
-		fmt.Println("url =", url, index, buffer.Bytes()[:20])
+		fmt.Println("url =", url, index, buffer.Bytes()[:8])
 		index++
 	})
 
