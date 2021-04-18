@@ -261,7 +261,7 @@ func (pusher *Pusher) QueueRTP(pack *RTPPack) *Pusher {
 
 	//packet := MakeRtspPacket(pack)
 
-	pusher.Server().CallPacketCall(pusher.URL(), pack.Buffer)
+	pusher.Server().CallPacketCallback(pusher.URL(), pack.Buffer)
 
 	pusher.cond.L.Lock()
 	pusher.queue = append(pusher.queue, pack)

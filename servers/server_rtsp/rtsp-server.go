@@ -173,7 +173,7 @@ func (server *Server) PacketCallback(cb RtspPacketCallback) {
 	server.packetCallbacks = append(server.packetCallbacks, cb)
 }
 
-func (server *Server) CallPacketCall(url string, buffer *bytes.Buffer) {
+func (server *Server) CallPacketCallback(url string, buffer *bytes.Buffer) {
 	for _, val_cb := range server.packetCallbacks {
 		val_cb(url, buffer)
 	}
