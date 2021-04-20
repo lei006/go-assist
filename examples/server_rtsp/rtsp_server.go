@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/lei006/go-assist/utils"
 	"github.com/lei006/go-assist/servers/encoder"
 	"github.com/lei006/go-assist/servers/server_rtsp"
 )
@@ -17,13 +18,23 @@ func main() {
 	rtspServer.PacketCallback(func(url string, buffer *bytes.Buffer) {
 		//fmt.Println("url =", url, index, buffer.Bytes()[:8])
 
+		data_buf := buffer.Bytes();
+		utils.PrintBin(data_buf, 18)
+
+
+
 		decoder := encoder.RtpDecoder{}
-		packet := decoder.ParseRTP(buffer.Bytes())
+		packet := decoder.ParseRTP(data_buf)
 		if packet != nil {
+
+			fmt.Println("Marker =", packet.Marker, packet.Payload[0]&0x1f, packet.Payload[1], packet.Payload[2])
+			//fmt.Println("PayloadType =", packet.PayloadType)
+
+
 
 			data_len := len(packet.Payload)
 			if data_len > 36 {
-				fmt.Println("PayloadType = ", packet.PayloadType, packet.SequenceNumber, "       len=", data_len, packet.Payload[:8])
+				//fmt.Println("PayloadType = ", packet.PayloadType, packet.SequenceNumber, "       len=", data_len, packet.Payload[:8])
 				//fmt.Println("buffer = ", buffer.Bytes()[:36])
 			}
 		}
