@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/lei006/go-assist/crypto/ecc_tool"
+	"github.com/lei006/go-assist/tools/ecc_tool"
 )
 
 func test_sign(index int) {
@@ -15,8 +15,8 @@ func test_sign(index int) {
 		return
 	}
 
-	fmt.Println(pub_key)
-	fmt.Println(pri_key)
+	//fmt.Println(pub_key)
+	//fmt.Println(pri_key)
 
 	//模拟发送者
 	//要发送的消息
@@ -34,7 +34,7 @@ func test_sign(index int) {
 	//验证签名
 	verifySignECC := ecc_tool.VerifySign(acceptmsg, sign, pub_key)
 
-	fmt.Println("验证结果：", index, verifySignECC, sign)
+	fmt.Println("验证结果1：", index, verifySignECC)
 
 }
 
