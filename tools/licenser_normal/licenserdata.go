@@ -30,7 +30,7 @@ func MakeLicenserData(appcode, hardsn string) *LicenserData {
 //生成验签的字符串
 func (this *LicenserData) ToString() string {
 
-	text := fmt.Sprintf("%s%s%s%s-%d%d-%s%s-%s",
+	text := fmt.Sprintf("%s%s%s%s-%d%d-%s%s%s",
 		this.AppName, this.AppCode, this.CompanyName, this.HardSn,
 		this.MaxNum, this.ExpireAt,
 		this.Copyright, this.Desc, this.PubKey)
