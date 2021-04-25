@@ -10,7 +10,7 @@ import (
 	"github.com/lei006/go-assist/utils"
 )
 
-func test2() {
+func test1() {
 
 	//licensefile := "./license.lic"
 
