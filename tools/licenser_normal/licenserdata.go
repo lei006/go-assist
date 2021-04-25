@@ -15,6 +15,7 @@ type LicenserData struct {
 	Copyright   string `bson:"copyright" json:"copyright"`     //版权所有人
 	Desc        string `bson:"desc" json:"desc"`               //描述
 	Sign        string `bson:"sign" json:"sign"`               //签名字符串
+	PubKey      string `bson:"pub_key" json:"pub_key"`         //公钥
 }
 
 func MakeLicenserData(appcode, hardsn string) *LicenserData {
@@ -29,10 +30,10 @@ func MakeLicenserData(appcode, hardsn string) *LicenserData {
 //生成验签的字符串
 func (this *LicenserData) ToString() string {
 
-	text := fmt.Sprintf("%s%s%s%s-%d%d-%s%s",
+	text := fmt.Sprintf("%s%s%s%s-%d%d-%s%s-%s",
 		this.AppName, this.AppCode, this.CompanyName, this.HardSn,
 		this.MaxNum, this.ExpireAt,
-		this.Copyright, this.Desc)
+		this.Copyright, this.Desc, this.PubKey)
 
 	return text
 }

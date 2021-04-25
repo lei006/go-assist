@@ -3,7 +3,6 @@ package licenser_normal
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"time"
 
 	"github.com/lei006/go-assist/tools/ecc_tool"
@@ -46,6 +45,7 @@ func MakeLicenser(appname, appcode, hardsn string, publish_key string) *Licenser
 	return licenser
 }
 
+/*
 func (this *Licenser) LoadFromFile(filename string) error {
 
 	data, err := ioutil.ReadFile(filename)
@@ -56,6 +56,16 @@ func (this *Licenser) LoadFromFile(filename string) error {
 	err = this.LoadData(string(data))
 	return err
 }
+
+func (this *Licenser) SaveToFile(filename string) error {
+
+	license_str := this.Data.ToString()
+
+	err := ioutil.WriteFile(filename, []byte(license_str), 0666) //写入文件(字节数组)
+
+	return err
+}
+*/
 
 func (this *Licenser) SetCallback(cb LicenserUpdateCallback) {
 	this.callbacks = append(this.callbacks, cb)
