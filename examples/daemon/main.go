@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lei006/go-assist/daemontool"
+	"github.com/lei006/go-assist/tools/daemontool"
 )
 
 func main() {

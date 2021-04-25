@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lei006/go-assist/daemontool/daemon"
+	"github.com/lei006/go-assist/tools/daemontool/daemon"
 
 	"github.com/sohaha/zlsgo/zarray"
 	"github.com/sohaha/zlsgo/zfile"
