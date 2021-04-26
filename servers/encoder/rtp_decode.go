@@ -17,11 +17,11 @@ const (
 )
 
 type RtpDecoder struct {
-	h264Parser H264Parser
+	h264Packet *datapacket.H264Packet
 }
 
 //拆包
-func (decoder *RtpDecoder) ParsePacket(rtpBytes []byte) (*datapacket.DataPacket, error) {
+func (decoder *RtpDecoder) ParsePacket(rtpBytes []byte) (datapacket.DataPacket, error) {
 
 	//只拆包头..
 	rtp_packet := &datapacket.RtpPacket{}
@@ -89,21 +89,24 @@ func (decoder *RtpDecoder) ParsePacket(rtpBytes []byte) (*datapacket.DataPacket,
 //      29     FU-B      Fragmentation unit
 //      30-31  undefined
 
-func (decoder *RtpDecoder) parsePacket_H264(payload []byte, is_first bool) (*datapacket.DataPacket, error) {
+func (decoder *RtpDecoder) parsePacket_H264(payload []byte, is_first bool) (datapacket.DataPacket, error) {
+
+	if decoder.h264Packet == nil {
+		decoder.h264Packet = &datapacket.H264Packet{}
+	}
 
 	//解码去H264数据包...
+	decoder.h264Packet.UnmarshalRTP(payload)
 
-	decoder.h264Parser.UnmarshalRTP(payload)
+	return decoder.h264Packet, nil
+}
+
+func (decoder *RtpDecoder) parsePacket_H265(rtpBytes []byte) (datapacket.DataPacket, error) {
 
 	return nil, nil
 }
 
-func (decoder *RtpDecoder) parsePacket_H265(rtpBytes []byte) (*datapacket.DataPacket, error) {
-
-	return nil, nil
-}
-
-func (decoder *RtpDecoder) parsePacket_AAC(rtpBytes []byte) (*datapacket.DataPacket, error) {
+func (decoder *RtpDecoder) parsePacket_AAC(rtpBytes []byte) (datapacket.DataPacket, error) {
 
 	return nil, nil
 }

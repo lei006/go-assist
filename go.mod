@@ -14,7 +14,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/pion/rtp v1.6.2 // indirect
+	github.com/pion/rtp v1.6.5 // indirect
 	github.com/pixelbender/go-sdp v1.1.0 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect

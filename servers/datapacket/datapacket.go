@@ -14,9 +14,9 @@ const (
 
 type DataPacket interface {
 	GetType() PacketType
-	GetDataSize() int
-	GetData() []byte
-	PacketInfo() string
+	//GetDataSize() int
+	//GetData() []byte
+	//PacketInfo() string
 }
 
 type AudioPacket interface {
