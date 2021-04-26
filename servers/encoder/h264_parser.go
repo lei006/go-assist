@@ -2,8 +2,11 @@ package encoder
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
+
+	"github.com/lei006/go-assist/servers/datapacket"
 
 	h264_parser "github.com/deepch/vdk/codec/h264parser"
 
@@ -245,7 +248,6 @@ func (H264Parser *H264Parser) Parse(b []byte, isSeq bool, w io.Writer) (err erro
 	return
 }
 
-/*
 // 把多个 nal 粘成一个 nal
 //func (H264Parser *H264Parser) UnmarshalRTP(rtpPacket *pion_rtp.Packet) (*core.DataPacket, error) {
 func (H264Parser *H264Parser) UnmarshalRTP(payload []byte) (*datapacket.H264Packet, error) {
@@ -270,7 +272,7 @@ func (H264Parser *H264Parser) UnmarshalRTP(payload []byte) (*datapacket.H264Pack
 		return nil, err
 	}
 }
-*/
+
 func (H264Parser *H264Parser) PrintLog() {
 	if H264Parser.gotpkt {
 

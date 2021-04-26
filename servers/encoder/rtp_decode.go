@@ -23,7 +23,7 @@ type RtpDecoder struct {
 //拆包
 func (decoder *RtpDecoder) ParsePacket(rtpBytes []byte) (*datapacket.DataPacket, error) {
 
-	//拆包头..
+	//只拆包头..
 	rtp_packet := &datapacket.RtpPacket{}
 	err := rtp_packet.Header.Unmarshal(rtpBytes)
 	if err != nil {
@@ -90,6 +90,8 @@ func (decoder *RtpDecoder) ParsePacket(rtpBytes []byte) (*datapacket.DataPacket,
 //      30-31  undefined
 
 func (decoder *RtpDecoder) parsePacket_H264(payload []byte, is_first bool) (*datapacket.DataPacket, error) {
+
+	//解码去H264数据包...
 
 	decoder.h264Parser.UnmarshalRTP(payload)
 
