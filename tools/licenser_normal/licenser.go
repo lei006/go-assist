@@ -91,9 +91,6 @@ func (this *Licenser) checkData(license_data *LicenserData) error {
 	text := license_data.ToString()
 	ret := this.EccVerifySign(text, license_data.Sign, this.PublishKey)
 	if ret == false {
-		fmt.Println("text:[", text, "]")
-		fmt.Println("sign:[", license_data.Sign, "]")
-		fmt.Println("pub_key:[", this.PublishKey, "]")
 		return errors.New("验签名失败")
 	}
 
