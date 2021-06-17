@@ -33,6 +33,7 @@ func test2() {
 		licenser := licenser_normal.MakeLicenser(appName, appCode, hardsn, pub_key)
 		lic_data := licenser_normal.MakeLicenserData(appCode, hardsn)
 
+		lic_data.AppName = appName
 		lic_data.CompanyName = CompanyName
 		lic_data.MaxNum = maxNum
 		lic_data.Copyright = Copyright
@@ -46,10 +47,27 @@ func test2() {
 		} else {
 
 			lic_data.Sign = sign
-			lic_data.PubKey = pub_key
+			//lic_data.PubKey = pub_key
 
-			bret := licenser.EccVerifySign(lic_data_str, sign, pub_key)
+			lic_data_str111, err_json := lic_data.ToJson()
+			if err_json != nil {
+				fmt.Println("err_json ", err_json.Error())
+				continue
+			}
+
+			bret := licenser.SetData(lic_data_str111, func(data *licenser_normal.LicenserData) {
+
+			})
+			if bret != nil {
+				fmt.Println("-----------text:", lic_data_str)
+				fmt.Println("-----------pub_key:", pub_key)
+				fmt.Println("-----------sign:", sign)
+			}
+
 			fmt.Println("bret =", i, bret)
+			fmt.Println("------------------------------------------------")
+			fmt.Println("------------------------------------------------")
+			fmt.Println("------------------------------------------------")
 		}
 	}
 

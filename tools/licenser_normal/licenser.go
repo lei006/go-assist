@@ -18,8 +18,7 @@ type Licenser struct {
 	PublishKey string //公钥
 	is_demo    bool   //演示版
 
-	Data      *LicenserData
-	callbacks []LicenserUpdateCallback //更新回调列表
+	Data *LicenserData
 }
 
 func MakeLicenser(appname, appcode, hardsn string, publish_key string) *Licenser {
@@ -41,37 +40,10 @@ func MakeLicenser(appname, appcode, hardsn string, publish_key string) *Licenser
 		Data:       licenserData,
 		is_demo:    true,
 	}
-
 	return licenser
 }
 
-/*
-func (this *Licenser) LoadFromFile(filename string) error {
-
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	err = this.LoadData(string(data))
-	return err
-}
-
-func (this *Licenser) SaveToFile(filename string) error {
-
-	license_str := this.Data.ToString()
-
-	err := ioutil.WriteFile(filename, []byte(license_str), 0666) //写入文件(字节数组)
-
-	return err
-}
-*/
-
-func (this *Licenser) SetCallback(cb LicenserUpdateCallback) {
-	this.callbacks = append(this.callbacks, cb)
-}
-
-func (this *Licenser) LoadData(lic_data string) error {
+func (this *Licenser) SetData(lic_data string, call_back func(data *LicenserData)) error {
 
 	license_data := &LicenserData{}
 
@@ -92,9 +64,7 @@ func (this *Licenser) LoadData(lic_data string) error {
 	this.Data = license_data
 
 	// 4. 通知生效
-	for _, val := range this.callbacks {
-		val()
-	}
+	call_back(license_data)
 
 	return nil
 }
@@ -121,6 +91,9 @@ func (this *Licenser) checkData(license_data *LicenserData) error {
 	text := license_data.ToString()
 	ret := this.EccVerifySign(text, license_data.Sign, this.PublishKey)
 	if ret == false {
+		fmt.Println("text:[", text, "]")
+		fmt.Println("sign:[", license_data.Sign, "]")
+		fmt.Println("pub_key:[", this.PublishKey, "]")
 		return errors.New("验签名失败")
 	}
 
