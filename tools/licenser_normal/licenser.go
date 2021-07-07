@@ -145,9 +145,10 @@ func (this *Licenser) GetInfo() interface{} {
 	list = append(list, DataItem{Key: "授权程序", Val: this.Data.AppCode})
 	if this.IsDemo() {
 		list = append(list, DataItem{Key: "授权描述", Val: "演示版"})
+		list = append(list, DataItem{Key: "is_demo", Val: "true"})
 	} else {
 		list = append(list, DataItem{Key: "授权描述", Val: this.Data.Desc})
-		list = append(list, DataItem{Key: "is_auth", Val: "true"})
+		list = append(list, DataItem{Key: "is_demo", Val: "false"})
 	}
 
 	list = append(list, DataItem{Key: "授权硬件", Val: this.Data.HardSn})
