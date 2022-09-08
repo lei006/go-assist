@@ -109,10 +109,10 @@ func test_license01() (bool, error) {
 	expireTime := time.Now().Add(3 * time.Second) //过期时间取值
 
 	enc_data := &license.LicenseClaims{}
-	enc_data.StandardClaims.Id = license.RandString(10)
-	enc_data.StandardClaims.Subject = license.RandString(100)
-	enc_data.StandardClaims.Issuer = "乐园天"
-	enc_data.StandardClaims.ExpiresAt = expireTime.Unix()
+	enc_data.AppName = license.RandString(10)
+	enc_data.Subject = license.RandString(100)
+	enc_data.Issuer = "乐园天"
+	enc_data.ExpiresAt = expireTime.Unix()
 	enc_data.Number = time.Now().Unix()
 
 	lic_data, err := license.KeyEncryption(enc_data, key)

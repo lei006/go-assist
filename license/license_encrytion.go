@@ -13,7 +13,7 @@ func TestLicense() (bool, error) {
 	}
 
 	enc_data := &LicenseClaims{}
-	enc_data.StandardClaims.Id = RandString(10)
+	enc_data.AppName = RandString(10)
 
 	lic_data, err := KeyEncryption(enc_data, key)
 	if err != nil {
@@ -25,7 +25,7 @@ func TestLicense() (bool, error) {
 		fmt.Println("Decryption error:", err)
 		return false, errors.New("license Decryption error:" + err.Error())
 	}
-	if enc_data.StandardClaims.Id != dec_data.StandardClaims.Id {
+	if enc_data.AppName != dec_data.AppName {
 		return false, nil
 	}
 	return true, nil
