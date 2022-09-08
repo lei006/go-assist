@@ -1,6 +1,7 @@
 package license
 
 import (
+	"encoding/base64"
 	"encoding/json"
 )
 
@@ -11,9 +12,9 @@ type licenseData struct {
 }
 
 //签名一个数具
-func (data *licenseData) ToJson() (string, error) {
+func (lic_data *licenseData) toJson() (string, error) {
 
-	b, err := json.Marshal(data)
+	b, err := json.Marshal(lic_data)
 	if err != nil {
 		return "", err
 	}
@@ -21,7 +22,7 @@ func (data *licenseData) ToJson() (string, error) {
 	return string(b), nil
 }
 
-func (lic_data *licenseData) FromJson(data_str string) error {
+func (lic_data *licenseData) fromJson(data_str string) error {
 
 	data := []byte(data_str)
 	err := json.Unmarshal(data, lic_data)
@@ -29,14 +30,24 @@ func (lic_data *licenseData) FromJson(data_str string) error {
 
 }
 
-func (lic_data *licenseData) Verify() (bool, error) {
+func (lic_data *licenseData) ToString() (string, error) {
 
-	//
-	key := &LicenseKey{
-		PubKey: lic_data.PubKey,
+	str_json, err := lic_data.toJson()
+	if err != nil {
+		return "", err
 	}
 
-	verify, err := key.Verify(lic_data.Claims, lic_data.Sign)
+	base64_str := base64.StdEncoding.EncodeToString([]byte(str_json))
 
-	return verify, err
+	return base64_str, nil
+}
+
+func (lic_data *licenseData) FromString(data_str string) error {
+
+	byte_data, err := base64.StdEncoding.DecodeString(data_str)
+	if err != nil {
+		return err
+	}
+	lic_data.fromJson(string(byte_data))
+	return nil
 }

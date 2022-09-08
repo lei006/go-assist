@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -17,23 +18,88 @@ type LicenseKey struct {
 	PriKey string `json:"pri_key"` //私钥
 }
 
-func (key *LicenseKey) ToString() string {
-	return "pub:" + key.PubKey + ",pri:" + key.PriKey
+func MakeLicenseKey(pub_key string, pri_key string) *LicenseKey {
+	key := &LicenseKey{
+		PubKey: pub_key,
+		PriKey: pri_key,
+	}
+	return key
 }
 
+func (key *LicenseKey) ToCompare(tmp_key *LicenseKey) bool {
+
+	if tmp_key.PubKey == key.PubKey && tmp_key.PriKey == key.PriKey {
+		return true
+	}
+	return false
+}
+
+//签名一个数具
 func (key *LicenseKey) ToJson() (string, error) {
 
 	b, err := json.Marshal(key)
 	if err != nil {
 		return "", err
 	}
+
 	return string(b), nil
 }
 
-func (key *LicenseKey) TestSign(msg string) (bool, error) {
+func (key *LicenseKey) FromJson(data_str string) error {
 
-	//生成数字签名
-	//sign, err := ecc_tool.Sign(msg, pri_key)
+	data := []byte(data_str)
+	err := json.Unmarshal(data, key)
+	return err
+
+}
+
+func (key *LicenseKey) ToBase64String() (string, error) {
+
+	str_json, err := key.ToJson()
+	if err != nil {
+		return "", err
+	}
+
+	base64_str := base64.StdEncoding.EncodeToString([]byte(str_json))
+
+	return base64_str, nil
+}
+
+func (key *LicenseKey) FromBase64String(data_str string) error {
+
+	byte_data, err := base64.StdEncoding.DecodeString(data_str)
+	if err != nil {
+		return err
+	}
+	err = key.FromJson(string(byte_data))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//取得公钥字符串
+func (key *LicenseKey) GetBase64PubKey() string {
+	return base64.StdEncoding.EncodeToString([]byte(key.PubKey))
+}
+
+//设置公钥字符串
+func (key *LicenseKey) SetBase64PubKey(base64_key_str string) error {
+	byte_data, err := base64.StdEncoding.DecodeString(base64_key_str)
+	if err != nil {
+		return err
+	}
+	key.PubKey = string(byte_data)
+	return nil
+}
+
+func (key *LicenseKey) TestKey() (bool, error) {
+
+	return false, nil
+}
+
+func (key *LicenseKey) TestSign(msg string) (bool, error) {
 
 	sign, err := key.Sign(msg)
 	if err != nil {
@@ -41,7 +107,7 @@ func (key *LicenseKey) TestSign(msg string) (bool, error) {
 		return false, errors.New("生成签名出错:" + err.Error())
 	}
 
-	verify, err := key.Verify(msg, sign)
+	verify, err := key.VerifySign(msg, sign)
 
 	return verify, err
 }
@@ -49,7 +115,7 @@ func (key *LicenseKey) TestSign(msg string) (bool, error) {
 func (key *LicenseKey) Sign(msg string) (string, error) {
 
 	//取得私钥
-	privateKey, err := PrivateKeyFromString(key.PriKey)
+	privateKey, err := key.privateKeyFromString(key.PriKey)
 	if err != nil {
 		return "", err
 	}
@@ -74,9 +140,8 @@ func (key *LicenseKey) Sign(msg string) (string, error) {
 	}
 
 	sign := &EccSign{
-		Rtext:  string(rtext),
-		Stext:  string(stext),
-		PubKey: key.PubKey,
+		Rtext: string(rtext),
+		Stext: string(stext),
 	}
 	//sign.PubKey = "test"
 	tmp_str, err := sign.ToJson()
@@ -88,10 +153,10 @@ func (key *LicenseKey) Sign(msg string) (string, error) {
 }
 
 //验证数字签名
-func (key *LicenseKey) Verify(msg string, sign string) (bool, error) {
+func (key *LicenseKey) VerifySign(msg string, sign string) (bool, error) {
 
 	//读取公钥
-	publicKey, err := PublicKeyFromString(key.PubKey)
+	publicKey, err := key.publicKeyFromString(key.PubKey)
 	if err != nil {
 		return false, err
 	}
@@ -117,7 +182,7 @@ func (key *LicenseKey) Verify(msg string, sign string) (bool, error) {
 }
 
 //取得ECC私钥
-func PrivateKeyFromString(private_str string) (*ecdsa.PrivateKey, error) {
+func (key *LicenseKey) privateKeyFromString(private_str string) (*ecdsa.PrivateKey, error) {
 	//读取私钥
 
 	//pem解码
@@ -132,7 +197,7 @@ func PrivateKeyFromString(private_str string) (*ecdsa.PrivateKey, error) {
 }
 
 //取得ECC公钥
-func PublicKeyFromString(publish_str string) (*ecdsa.PublicKey, error) {
+func (key *LicenseKey) publicKeyFromString(publish_str string) (*ecdsa.PublicKey, error) {
 	//读取公钥
 	//pem解密
 	block, _ := pem.Decode(([]byte)(publish_str))

@@ -11,6 +11,36 @@ type LicenseClaims struct {
 	Number int64 `json:"num,omitempty"`
 }
 
+func (lic_claims *LicenseClaims) ToCompare(tmp_lic_claims *LicenseClaims) bool {
+
+	if lic_claims.Number != tmp_lic_claims.Number {
+		return false
+	}
+	if lic_claims.Audience != tmp_lic_claims.Audience {
+		return false
+	}
+	if lic_claims.ExpiresAt != tmp_lic_claims.ExpiresAt {
+		return false
+	}
+	if lic_claims.Id != tmp_lic_claims.Id {
+		return false
+	}
+	if lic_claims.IssuedAt != tmp_lic_claims.IssuedAt {
+		return false
+	}
+	if lic_claims.Issuer != tmp_lic_claims.Issuer {
+		return false
+	}
+	if lic_claims.NotBefore != tmp_lic_claims.NotBefore {
+		return false
+	}
+	if lic_claims.Subject != tmp_lic_claims.Subject {
+		return false
+	}
+
+	return true
+}
+
 //签名一个数具
 func (data *LicenseClaims) ToJson() (string, error) {
 
