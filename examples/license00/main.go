@@ -131,7 +131,7 @@ func test_license01() (bool, error) {
 		return false, errors.New("解码前后不一致")
 	}
 
-	fmt.Println("lic_data==>", lic_data)
+	fmt.Println("lic_data==>", "解码前后数据一致")
 
 	return true, nil
 

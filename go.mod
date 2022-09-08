@@ -3,6 +3,7 @@ module github.com/lei006/go-assist
 go 1.16
 
 require (
+	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/auth0/go-jwt-middleware v1.0.0 // indirect
 	github.com/beego/beego/v2 v2.0.1 // indirect
