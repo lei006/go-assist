@@ -1,23 +1,42 @@
 package license
 
 import (
-	jwt "github.com/golang-jwt/jwt/v4"
+	"encoding/json"
 )
 
-type LicenseData struct {
-	jwt.StandardClaims
+type licenseData struct {
+	Claims string `json:"claims"`
+	Sign   string `json:"sign"`
+	PubKey string `json:"pub_key"`
 }
 
 //签名一个数具
-func (data *LicenseData) Sign(key string) (string, error) {
+func (data *licenseData) ToJson() (string, error) {
 
-	//data.si
+	b, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
 
-	return "", nil
+	return string(b), nil
 }
 
-//检验
-func (data *LicenseData) Verify(sign string, key string) (bool, error) {
+func (lic_data *licenseData) FromJson(data_str string) error {
 
-	return false, nil
+	data := []byte(data_str)
+	err := json.Unmarshal(data, lic_data)
+	return err
+
+}
+
+func (lic_data *licenseData) Verify() (bool, error) {
+
+	//
+	key := &LicenseKey{
+		PubKey: lic_data.PubKey,
+	}
+
+	verify, err := key.Verify(lic_data.Claims, lic_data.Sign)
+
+	return verify, err
 }
