@@ -45,6 +45,25 @@ func TestLicense() (bool, error) {
 
 func KeyEncryption(data *LicenseClaims, key *LicenseKey) (string, error) {
 
+	lic_data, err := _keyEncryption(data, key)
+	if err != nil {
+		return "", err
+	}
+
+	dec_data, err := KeyDecryption(lic_data, key)
+	if err != nil {
+		return "", err
+	}
+
+	if dec_data.ToCompare(data) == false {
+		return "", errors.New("Authentication, decoding inconsistent")
+	}
+
+	return lic_data, nil
+}
+
+func _keyEncryption(data *LicenseClaims, key *LicenseKey) (string, error) {
+
 	json_str, err := data.ToJson()
 	if err != nil {
 		return "", err
