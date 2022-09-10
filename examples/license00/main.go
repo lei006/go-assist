@@ -138,19 +138,28 @@ func test_license01() (bool, error) {
 }
 
 func main() {
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 2; i++ {
 		test_sign()
 	}
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 2; i++ {
 		test_key()
 	}
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 2; i++ {
 		test_license00()
 	}
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 2; i++ {
 		test_license01()
 	}
 
 	//test_license(100)
+
+	key, err := license.MakEccP521Key()
+	if err != nil {
+		fmt.Println("生成KEY错误:", err)
+		return
+	}
+
+	key_str, err := key.ToBase64String()
+	fmt.Println("key : ", key_str, err)
 
 }
