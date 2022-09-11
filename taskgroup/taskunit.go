@@ -1,7 +1,5 @@
 package taskgroup
 
-import "fmt"
-
 // 任务调度器
 type TaskUnit struct {
 	taskChan *chan TaskGroupData
@@ -26,8 +24,8 @@ func (task *TaskUnit) Run() {
 				//立刻退出..
 				break
 			}
-			task_data.Data.Run()
-			fmt.Println("task(", task.Id, ")  data=", task_data.Data.GetID())
+			task_data.Data.Run(task.Id)
+
 		}
 
 	}()

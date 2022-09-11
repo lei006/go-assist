@@ -1,8 +1,7 @@
 package taskgroup
 
 type TaskData interface {
-	Run()
-	GetID() int64
+	Run(int64)
 }
 
 type TaskGroupData struct {
