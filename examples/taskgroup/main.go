@@ -26,7 +26,7 @@ func (test *TaskTest) GetID() int64 {
 }
 
 func main() {
-	taskgroup.Default.SetTaskCount(2)
+	taskgroup.Default.SetTaskCount(20)
 
 	for i := 0; i < 100; i++ {
 
