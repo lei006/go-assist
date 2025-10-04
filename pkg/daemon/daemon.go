@@ -4,9 +4,9 @@ package daemon
 import (
 	"log"
 	"os"
-	"yc-webreport-server/pkg/zlog"
 
 	"github.com/kardianos/service"
+	"github.com/lei006/go-assist/pkg/zlog"
 )
 
 // DaemonService 结构体实现了服务接口
@@ -17,7 +17,6 @@ type DaemonService struct {
 
 // Start 服务启动逻辑
 func (d *DaemonService) Start(s service.Service) error {
-	d.log.Info("Starting the daemon service...") // 使用日志记录
 
 	// 启动传入的任务函数
 	go d.run() // 启动后台任务
@@ -29,14 +28,12 @@ func (d *DaemonService) run() {
 	// 调用传入的任务函数
 	if d.Task != nil {
 		d.Task()
-	} else {
-		d.log.Warn("No task function provided.") // 如果没有提供任务函数，记录警告
 	}
 }
 
 // Stop 服务停止逻辑
 func (d *DaemonService) Stop(s service.Service) error {
-	d.log.Info("Stopping the daemon service...") // 使用日志记录
+
 	return nil
 }
 

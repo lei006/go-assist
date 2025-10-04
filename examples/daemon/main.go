@@ -4,26 +4,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lei006/go-assist/tools/daemontool"
+	"github.com/lei006/go-assist/pkg/daemon"
+	"github.com/lei006/go-assist/pkg/zlog"
 )
 
 func main() {
 
-	daemonTool := daemontool.DefDaemonTool
-	/*
-		daemonTool.OnInit("tet_app", "测试的...")
-		daemonTool.SetModel(false)
-		daemonTool.ServerRun(func() {
-			Run()
-		})
-	*/
-	daemonTool.Run("test_app", "desc 111测试", Run)
+	daemon.StartDaemon("testApp", "testApp", "", RunApp, zlog.New("daemon"))
+
 }
 
-func Run() {
+func RunApp() {
 
 	for true {
-		fmt.Println("xxxxxxx", daemontool.DefDaemonTool.GetWordPath())
+		fmt.Println("xxxxxxx")
 		time.Sleep(time.Second)
 	}
 
